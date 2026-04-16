@@ -82,15 +82,30 @@ class BatchController extends Controller
         // Ghép nối thành URL chuẩn GS1 Digital Link
        $scanUrl = url("/txng/01/{$gtin}/10/{$batchCode}");
 
-        // --- 2. TẠO MÃ QR TỪ URL CHUẨN ---
-        $qrFileName = 'qr_' . $batchCode . '_' . time() . '.svg';
-        $qrContent = \SimpleSoftwareIO\QrCode\Facades\QrCode::size(300)
+        // --- 2. TẠO MÃ QR TỪ URL CHUẨN (CÓ TÍCH HỢP LOGO DOANH NGHIỆP) ---
+        // Đổi đuôi file sang .png vì định dạng PNG hỗ trợ chèn ảnh đè lên tốt nhất
+        $qrFileName = 'qr_' . $batchCode . '_' . time() . '.svg'; 
+        
+        // Cấu hình QR Code nền tảng (Size 300, Màu xanh ngọc, Mức chịu lỗi H cao nhất)
+        $qrBuilder = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+                    ->size(300)
                     ->color(5, 150, 105) 
-                    ->margin(10)
-                    ->generate($scanUrl);
+                    ->margin(2) 
+                    ->errorCorrection('H'); // Mức H: Cho phép QR bị che 30% vẫn quét được
+
+        // Lấy logo của doanh nghiệp đang đăng nhập
+        $userProfile = \App\Models\UserProfile::where('user_id', Auth::id())->first();
+        
+        if ($userProfile && $userProfile->logo_url && Storage::disk('public')->exists($userProfile->logo_url)) {
+            // Nếu có Logo: Chèn logo vào giữa (chiếm 20% diện tích)
+            $logoPath = storage_path('app/public/' . $userProfile->logo_url);
+            $qrContent = $qrBuilder->merge($logoPath, 0.2, true)->generate($scanUrl);
+        } else {
+            // Nếu chưa có Logo: Tạo mã QR nguyên bản
+            $qrContent = $qrBuilder->generate($scanUrl);
+        }
                     
         Storage::disk('public')->put('qrcodes/' . $qrFileName, $qrContent);
-
         // --- 3. LƯU VÀO DATABASE ---
         Batch::create([
             'product_id'         => $product->id,
@@ -135,5 +150,47 @@ class BatchController extends Controller
 
         $batch->delete();
         return redirect()->route('enterprise.batches.index')->with('success', 'Đã xóa lô hàng thành công!');
+    }
+    // Băm dữ liệu và lưu lên Private Ledger / IPFS Node
+    public function mintToBlockchain($id)
+    {
+        $batch = \App\Models\Batch::with('product')->findOrFail($id);
+
+        // 1. Kiểm tra xem lô hàng này đã lên chuỗi chưa
+        $exists = \App\Models\BlockchainTransaction::where('batch_id', $id)->first();
+        if ($exists) {
+            return back()->with('error', 'Lô hàng này đã được đưa lên chuỗi trước đó. Không thể ghi đè!');
+        }
+
+        // 2. GOM DỮ LIỆU ĐỂ BĂM (Data Payload)
+        // Đây là những thông tin quan trọng nhất, sửa 1 dấu chấm hash cũng sẽ đổi
+        $payload = [
+            'batch_id' => $batch->id,
+            'batch_code' => $batch->batch_code,
+            'product_name' => $batch->product->name,
+            'manufacturing_date' => $batch->manufacturing_date,
+            'expiry_date' => $batch->expiry_date,
+            // Nếu bạn có bảng logs (nhật ký), hãy kéo dữ liệu logs vào đây:
+            // 'logs' => $batch->logs->toArray() 
+        ];
+
+        // 3. Ép thành chuỗi JSON chuẩn
+        $jsonData = json_encode($payload, JSON_UNESCAPED_UNICODE);
+
+        // 4. THUẬT TOÁN BĂM SHA-256 (Tạo ra chuỗi 64 ký tự bất biến)
+        $hash = hash('sha256', $jsonData);
+
+        // Thêm tiền tố 0x để trông giống chuẩn mã băm Blockchain / Smart Contract
+        $finalHash = '0x' . $hash;
+
+        // 5. LƯU VÀO SỔ CÁI (Database)
+        \App\Models\BlockchainTransaction::create([
+            'batch_id' => $batch->id,
+            'transaction_hash' => $finalHash,
+            'network' => 'MDTrace IPFS-Simulated Network', // Phù hợp với định hướng IPFS
+            'status' => 1
+        ]);
+
+        return back()->with('success', 'Đã đóng gói và mã hóa (Hash) dữ liệu lô hàng thành công!');
     }
 }

@@ -14,7 +14,7 @@
             <a href="#benefits" class="hover:text-accent transition">Lợi ích</a>
              <a href="#testimonials" class="hover:text-accent transition">Đánh giá</a>
              <a href="{{ route('public.products.index') }}" class="hover:text-accent transition">Sản Phẩm</a>
-             <a href="#" class="hover:text-accent transition">Doanh nghiệp</a>
+             <a href="{{ route('public.enterprises.index') }}" class="hover:text-accent transition">Doanh nghiệp</a>
         </nav>
 <div class="flex items-center gap-4">
             {{-- Kiểm tra: Phải có Session đăng nhập VÀ User phải thực sự tồn tại trong CSDL --}}

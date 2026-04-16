@@ -13,51 +13,49 @@ class LoginController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request)
+  public function login(Request $request)
     {
         $credentials = $request->validate([
             'email'    => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
+        // CHỈNH SỬA Ở ĐÂY: Thêm điều kiện status phải là 'active' 
+        // Nếu status là 'locked', 'deleted', 'pending' hay 'rejected' -> attempt sẽ trả về false
+        $credentialsWithStatus = array_merge($credentials, ['status' => 'active']);
 
-            $user = Auth::user();
+        // Đối với Admin, có thể họ không có status 'active' hoặc status khác, 
+        // nên ta thử đăng nhập với status active trước, nếu không được thì kiểm tra xem có phải Admin không.
+        if (Auth::attempt($credentialsWithStatus, $request->boolean('remember'))) {
+            return $this->handleAuthenticatedRequest($request);
+        }
 
-            // 1. Kiểm tra nếu đang chờ duyệt
+        // Trường hợp đăng nhập thất bại: Có thể sai pass HOẶC tài khoản bị khóa/xóa/chờ duyệt
+        // Ta kiểm tra xem email có tồn tại không để đưa ra thông báo chính xác
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if ($user) {
             if ($user->status === 'pending') {
-                Auth::logout();
-                return redirect()->route('login')
-                    ->with('error', 'Tài khoản của bạn đang chờ Admin duyệt. Vui lòng chờ thông báo!');
+                return back()->with('error', 'Tài khoản đang chờ duyệt.')->withInput();
             }
-
-            // 2. Kiểm tra nếu BỊ TỪ CHỐI (Thêm đoạn này vào)
+            if ($user->status === 'locked') {
+                return back()->with('error', 'Tài khoản bị khóa đến: ' . ($user->locked_until ?? 'vĩnh viễn') . '. Lý do: ' . $user->lock_reason)->withInput();
+            }
             if ($user->status === 'rejected') {
-                $reason = $user->rejection_reason ?? 'Không có lý do cụ thể.';
-                Auth::logout();
-                return redirect()->route('login')
-                    ->with('error', 'Tài khoản của bạn đã bị từ chối! Lý do: ' . $reason);
+                return back()->with('error', 'Tài khoản đã bị từ chối.')->withInput();
             }
-
-            // 3. Kiểm tra nếu bị khóa
-            if ($user->status === 'inactive') {
-                Auth::logout();
-                return redirect()->route('login')
-                    ->with('error', 'Tài khoản của bạn đã bị khóa!');
+            if ($user->status === 'deleted') {
+                return back()->with('error', 'Tài khoản không tồn tại trên hệ thống.')->withInput();
             }
-
-            // 4. Nếu mọi thứ OK -> Điều hướng theo vai trò
-            if ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard')->with('success', 'Chào mừng Admin!');
+            
+            // Nếu status là active mà vẫn sai thì là sai mật khẩu
+            if (Auth::attempt($credentials, $request->boolean('remember'))) {
+                return $this->handleAuthenticatedRequest($request);
             }
-
-            // Đối với Enterprise đã được duyệt (active)
-            return redirect()->route('dashboard')->with('success', 'Đăng nhập thành công!');
         }
 
         return back()->withErrors([
-            'email' => 'Email hoặc mật khẩu không chính xác.',
+            'email' => 'Thông tin đăng nhập không chính xác.',
         ])->withInput();
     }
 
@@ -70,5 +68,16 @@ class LoginController extends Controller
 
         return redirect()->route('home')
             ->with('success', 'Bạn đã đăng xuất thành công.');
+    }
+    private function handleAuthenticatedRequest(Request $request)
+    {
+        $request->session()->regenerate();
+        $user = Auth::user();
+
+        if ($user->role === 'admin') {
+            return redirect()->route('admin.dashboard')->with('success', 'Chào mừng Admin!');
+        }
+
+        return redirect()->route('enterprise.dashboard')->with('success', 'Đăng nhập thành công!');
     }
 }

@@ -23,13 +23,20 @@
         </div>
         @endif
 
-        <div class="flex gap-3 w-full md:w-auto">
+       <div class="flex gap-3 w-full md:w-auto">
             <a href="{{ route('enterprise.products.create') }}" class="bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition flex items-center">
                 <i class="fa-solid fa-box-open mr-1"></i> Thêm Sản phẩm
             </a>
-            <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition opacity-50 cursor-not-allowed" title="Vui lòng hoàn thiện hồ sơ trước">
-                <i class="fa-solid fa-qrcode mr-1"></i> Tạo Lô hàng mới
-            </button>
+            
+            @if($isProfileComplete)
+                <a href="{{ route('enterprise.batches.create') }}" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition flex items-center">
+                    <i class="fa-solid fa-qrcode mr-1"></i> Tạo Lô hàng mới
+                </a>
+            @else
+                <button class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-sm transition opacity-50 cursor-not-allowed flex items-center" title="Vui lòng hoàn thiện hồ sơ trước khi tạo lô hàng">
+                    <i class="fa-solid fa-qrcode mr-1"></i> Tạo Lô hàng mới
+                </button>
+            @endif
         </div>
     </div>
 

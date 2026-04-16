@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - MDTrace</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body class="bg-gray-50 font-sans flex h-screen overflow-hidden">
@@ -18,13 +19,41 @@
         </div>
 
         <nav class="flex-1 py-6 px-4 space-y-2">
-            <a href="#" class="flex items-center gap-3 bg-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl transition">
-                <i class="fa-solid fa-building w-5"></i>
-                <span class="font-medium">Quản lý doanh nghiệp</span>
+           <a href="{{ route('admin.dashboard.stats') }}" 
+            class="flex items-center gap-3 {{ Route::is('admin.dashboard.stats') ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} px-4 py-3 rounded-xl transition shadow-sm">
+                <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                <span class="font-semibold">Tổng quan hệ thống</span>
             </a>
-            <a href="#" class="flex items-center gap-3 text-gray-400 hover:text-white hover:bg-white/5 px-4 py-3 rounded-xl transition">
-                <i class="fa-solid fa-layer-group w-5"></i>
-                <span class="font-medium">Quản lý danh mục</span>
+            <div x-data="{ open: {{ (Route::is('admin.dashboard') || Route::is('admin.enterprises.active')) ? 'true' : 'false' }} }">
+                <button @click="open = !open" 
+                        class="w-full flex items-center justify-between gap-3 text-gray-400 hover:text-white hover:bg-white/5 px-4 py-3 rounded-xl transition group">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-building-shield w-5 text-center group-hover:text-emerald-400"></i>
+                        <span class="font-semibold">Quản lý Doanh nghiệp</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
+
+                <div x-show="open" x-transition.origin.top class="mt-2 ml-6 space-y-1 border-l border-emerald-500/30 pl-4">
+                   <a href="{{ route('admin.dashboard') }}" 
+                       class="flex items-center gap-2 py-2 text-sm {{ Route::is('admin.dashboard') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }} transition">
+                        <i class="fa-solid fa-clipboard-question w-4 text-center {{ Route::is('admin.dashboard') ? 'text-emerald-400' : 'text-amber-500/70' }}"></i>
+                        <span>Duyệt hồ sơ mới</span>
+                    </a>
+
+                    <a href="{{ route('admin.enterprises.active') }}" 
+                       class="flex items-center gap-2 py-2 text-sm {{ Route::is('admin.enterprises.active') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }} transition">
+                        <i class="fa-solid fa-building-circle-check w-4 text-center {{ Route::is('admin.enterprises.active') ? 'text-emerald-400' : 'text-blue-400/70' }}"></i>
+                        <span>Đang hoạt động</span>
+                    </a>
+                </div>
+            </div>
+           <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-3 bg-emerald-600 text-white px-4 py-3 rounded-xl transition shadow-sm mt-4">
+                <i class="fa-solid fa-layer-group w-5 text-center"></i><span class="font-semibold">Danh mục sản phẩm</span>
+            </a>
+            <a href="{{ route('admin.profile') }}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl transition shadow-sm mt-4 {{ Route::is('admin.profile') ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                <i class="fa-solid fa-user-gear w-5 text-center"></i><span class="font-semibold">Hồ sơ cá nhân</span>
             </a>
         </nav>
 
@@ -63,17 +92,13 @@
                     <span class="font-medium">{{ session('success') }}</span>
                 </div>
             @endif
-            {{-- Hiển thị báo lỗi validate --}}
-            @if($errors->any())
-                <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl mb-6 shadow-sm">
-                    <ul class="list-disc pl-5">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
+           {{-- CHÈN THÊM CỤM NÀY VÀO: THÔNG BÁO LỖI (MÀU ĐỎ) --}}
+            @if(session('error'))
+                <div class="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-center gap-3 shadow-sm">
+                    <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                    <span class="font-medium">{{ session('error') }}</span>
                 </div>
             @endif
-
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
                     <h2 class="font-bold text-gray-800 text-lg">Danh sách đăng ký mới</h2>
@@ -101,7 +126,14 @@
                                         <div class="text-xs text-gray-500 mt-1"><i class="fa-solid fa-phone mr-1"></i> {{ $enterprise->profile->phone ?? 'N/A' }}</div>
                                     </td>
                                     <td class="px-6 py-4 font-medium text-gray-600">
-                                        {{ $enterprise->profile->tax_code ?? 'N/A' }}
+                                        <div class="flex items-center gap-2">
+                                            <span class="font-medium text-gray-700">{{ $enterprise->profile->tax_code ?? 'N/A' }}</span>
+                                            @if(!empty($enterprise->profile->tax_code))
+                                                <button type="button" onclick="traCuuMST('{{ $enterprise->profile->tax_code }}', '{{ $enterprise->profile->company_name ?? $enterprise->name }}')" class="bg-blue-50 text-blue-600 px-2 py-1 rounded text-xs font-bold hover:bg-blue-100 transition shadow-sm border border-blue-100">
+                                                    <i class="fa-solid fa-magnifying-glass"></i> Tra cứu
+                                                </button>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 text-gray-600">
                                         {{ $enterprise->email }}
@@ -169,8 +201,44 @@
         </div>
     </div>
 
-    <script>
-        function openRejectModal(id, companyName) {
+    <div id="mstModal" class="fixed inset-0 z-50 hidden bg-black/50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden transform transition-transform scale-95" id="mstModalContent">
+        <div class="bg-blue-600 p-4 flex justify-between items-center text-white">
+            <h3 class="font-bold text-lg"><i class="fa-solid fa-building-shield mr-2"></i>Kết quả tra cứu từ Tổng cục Thuế</h3>
+            <button onclick="closeMstModal()" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+        </div>
+        <div class="p-6">
+            <div id="mstLoading" class="text-center py-8">
+                <i class="fa-solid fa-spinner fa-spin text-4xl text-blue-500 mb-3"></i>
+                <p class="text-gray-500">Đang kết nối cơ sở dữ liệu quốc gia...</p>
+            </div>
+            
+            <div id="mstResult" class="hidden space-y-4">
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <p class="text-xs text-gray-500 font-bold uppercase mb-1">Doanh nghiệp khai báo:</p>
+                    <p class="font-bold text-slate-800" id="txtDnkhaibao">...</p>
+                </div>
+                
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <p class="text-xs text-blue-600 font-bold uppercase mb-1">Dữ liệu pháp lý (VietQR API):</p>
+                    <h4 class="font-bold text-lg text-slate-900 mb-2" id="txtTenCongTy">...</h4>
+                    <p class="text-sm text-gray-700"><i class="fa-solid fa-location-dot text-gray-400 mr-2"></i><span id="txtDiaChi">...</span></p>
+                </div>
+            </div>
+            
+            <div id="mstError" class="hidden text-center py-6">
+                <i class="fa-solid fa-triangle-exclamation text-4xl text-red-500 mb-3"></i>
+                <p class="text-red-600 font-medium">Không tìm thấy dữ liệu. Mã số thuế không tồn tại hoặc sai định dạng!</p>
+            </div>
+        </div>
+        <div class="bg-gray-50 p-4 text-right border-t border-gray-100">
+            <button onclick="closeMstModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-medium transition">Đóng</button>
+        </div>
+    </div>
+</div>
+
+<script>
+     function openRejectModal(id, companyName) {
             document.getElementById('rejectModal').classList.remove('hidden');
             document.getElementById('rejectModal').classList.add('flex');
             document.getElementById('rejectCompanyName').innerText = companyName;
@@ -178,10 +246,43 @@
             document.getElementById('rejectForm').action = '/admin/enterprise/' + id + '/reject';
         }
 
-        function closeRejectModal() {
+    function closeRejectModal() {
             document.getElementById('rejectModal').classList.add('hidden');
             document.getElementById('rejectModal').classList.remove('flex');
         }
-    </script>
+
+    function traCuuMST(taxCode, dnName) {
+        // Mở Modal và hiện trạng thái Loading
+        document.getElementById('mstModal').classList.remove('hidden');
+        document.getElementById('mstLoading').classList.remove('hidden');
+        document.getElementById('mstResult').classList.add('hidden');
+        document.getElementById('mstError').classList.add('hidden');
+        document.getElementById('txtDnkhaibao').innerText = dnName;
+
+        // Gọi API của VietQR
+        fetch(`https://api.vietqr.io/v2/business/${taxCode}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('mstLoading').classList.add('hidden');
+                
+                // Mã 00 là thành công của VietQR
+                if (data.code === '00' && data.data) {
+                    document.getElementById('mstResult').classList.remove('hidden');
+                    document.getElementById('txtTenCongTy').innerText = data.data.name;
+                    document.getElementById('txtDiaChi').innerText = data.data.address;
+                } else {
+                    document.getElementById('mstError').classList.remove('hidden');
+                }
+            })
+            .catch(error => {
+                document.getElementById('mstLoading').classList.add('hidden');
+                document.getElementById('mstError').classList.remove('hidden');
+            });
+    }
+
+    function closeMstModal() {
+        document.getElementById('mstModal').classList.add('hidden');
+    }
+</script>
 </body>
 </html>

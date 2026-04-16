@@ -23,7 +23,6 @@ class UserProfile extends Model
         'company_images',
         'company_certificates'
     ];
-
     // Relationship với User
     public function user()
     {
