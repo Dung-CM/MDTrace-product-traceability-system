@@ -18,7 +18,7 @@
         <div class="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 text-center md:text-left md:flex md:items-start md:gap-8">
             <div class="w-32 h-32 bg-white rounded-full flex items-center justify-center border-4 border-emerald-50 shadow-lg overflow-hidden relative z-10 mx-auto lg:mx-0">
                 @if($enterprise->profile && $enterprise->profile->logo_url)
-                    <img src="{{ asset('storage/' . $enterprise->profile->logo_url) }}" alt="Logo" class="w-full h-full object-cover">
+                    <img src="{{ getSecureImageUrl($enterprise->profile->logo_url) }}" alt="Logo" class="w-full h-full object-cover">
                 @else
                     <span class="text-5xl font-black text-emerald-500">{{ strtoupper(substr($enterprise->name, 0, 1)) }}</span>
                 @endif
@@ -93,7 +93,7 @@
                     @forelse($enterprise->products as $product)
                         <a href="{{ route('public.products.show', $product->id) }}" class="group block border border-gray-100 rounded-xl overflow-hidden hover:shadow-md transition">
                             <div class="aspect-square bg-gray-100 relative">
-                                <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                                <img src="{{ getSecureImageUrl($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
                             </div>
                             <div class="p-3">
                                 <h4 class="font-bold text-gray-800 text-sm truncate group-hover:text-emerald-600 transition">{{ $product->name }}</h4>
@@ -127,8 +127,8 @@
                 @if(!empty($enterprise->profile->company_certificates) && is_array($enterprise->profile->company_certificates))
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         @foreach($enterprise->profile->company_certificates as $cert)
-                            <a href="{{ asset('storage/' . $cert) }}" target="_blank" class="block aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition">
-                                <img src="{{ asset('storage/' . $cert) }}" alt="Chứng nhận" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                            <a href="{{ getSecureImageUrl($cert) }}" target="_blank" class="block aspect-square bg-gray-50 rounded-lg overflow-hidden border border-gray-200 hover:shadow-md transition">
+                                <img src="{{ getSecureImageUrl($cert) }}" alt="Chứng nhận" class="w-full h-full object-cover hover:scale-105 transition duration-300">
                             </a>
                         @endforeach
                     </div>
@@ -145,7 +145,7 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
                         @foreach($enterprise->profile->company_images as $img)
                             <div class="aspect-[4/3] bg-gray-50 rounded-lg overflow-hidden border border-gray-200 shadow-sm group">
-                                <img src="{{ asset('storage/' . $img) }}" alt="Cơ sở hoạt động" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                                <img src="{{ getSecureImageUrl($img) }}" alt="Cơ sở hoạt động" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
                             </div>
                         @endforeach
                     </div>

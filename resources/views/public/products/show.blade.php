@@ -34,17 +34,21 @@
     $expYYMMDD = $displayExp ? \Carbon\Carbon::parse($displayExp)->format('ymd') : '000000';
     $gs1String = "(01){$displayGtin}(10){$displayBatchCode}(17){$expYYMMDD}";
 
-   if (!function_exists('getSecureImageUrl')) {
+    if (!function_exists('getSecureImageUrl')) {
         function getSecureImageUrl($path) {
-            // Lấy link gốc từ file .env và cắt bỏ dấu / ở cuối nếu có
+            if (empty($path)) {
+                return ''; 
+            }
+
             $baseUrl = rtrim(env('APP_URL'), '/');
             
-            // Dọn dẹp đường dẫn (Phòng hờ Database lưu dư chữ public/ hoặc dấu /)
-            $cleanPath = str_replace('public/', '', $path);
+            $cleanPath = str_replace(['public/', 'storage/'], '', $path);
             $cleanPath = ltrim($cleanPath, '/');
             
-            // Nối lại thành link hoàn chỉnh
-            return $baseUrl . '/storage/' . $cleanPath;
+            $fullUrl = $baseUrl . '/storage/' . $cleanPath;
+            $fullUrl = str_replace('http://', 'https://', $fullUrl);
+
+            return $fullUrl;
         }
     }
 @endphp
@@ -105,7 +109,35 @@
                     <span class="text-sm font-bold text-slate-800">{{ $displayBatchCode }}</span>
                 </div>
             </div>
-        </div>
+
+            @if(isset($batch))
+                @php
+                    $transaction = \App\Models\BlockchainTransaction::where('batch_id', $batch->id)->first();
+                @endphp
+
+                @if($transaction)
+                    <div class="mt-5 p-4 border-2 border-emerald-500 rounded-2xl bg-emerald-50 relative overflow-hidden shadow-sm">
+                        <div class="absolute -right-6 -top-6 opacity-10 rotate-12">
+                            <i class="fa-solid fa-shield-check text-9xl text-emerald-600"></i>
+                        </div>
+
+                        <div class="flex items-center gap-3 relative z-10">
+                            <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-emerald-200 shrink-0">
+                                <i class="fa-solid fa-link"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-emerald-800 uppercase text-sm tracking-wider">Dữ liệu đã xác thực</h4>
+                                <p class="text-xs text-emerald-600 font-mono mt-0.5 truncate" title="{{ $transaction->transaction_hash }}">Hash: {{ $transaction->transaction_hash }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3 pt-3 border-t border-emerald-200/60 text-[11px] text-emerald-700 leading-relaxed italic relative z-10">
+                            <i class="fa-solid fa-circle-check"></i> Dữ liệu lô hàng này đã được niêm phong bất biến tại mạng lưới MDTrace IPFS vào lúc {{ $transaction->created_at->format('H:i d/m/Y') }}.
+                        </div>
+                    </div>
+                @endif
+            @endif
+            </div>
 
         <div class="mt-8">
             <div class="flex overflow-x-auto no-scrollbar gap-2 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 sticky top-4 z-20">

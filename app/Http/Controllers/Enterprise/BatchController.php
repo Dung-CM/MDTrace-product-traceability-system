@@ -14,7 +14,6 @@ use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\QrCode;
 use Endroid\QrCode\Logo\Logo;
 use Endroid\QrCode\Writer\PngWriter;
-
 class BatchController extends Controller
 {
     // 1. Hiển thị danh sách Lô hàng
@@ -85,19 +84,18 @@ class BatchController extends Controller
         // Lấy chính xác tên miền Ngrok từ file .env (đảm bảo luôn có https://)
         $baseUrl = rtrim(env('APP_URL'), '/');
        $scanUrl = $baseUrl . "/txng/01/{$gtin}/10/{$batchCode}";
-       
+
         // --- 2. TẠO MÃ QR TỪ URL CHUẨN (Dùng thư viện Endroid) ---
         $qrFileName = 'qr_' . $batchCode . '_' . time() . '.png'; // Bắt buộc dùng PNG
         
-        $writer = new PngWriter();
+       $writer = new PngWriter();
 
-        // Cấu hình mã QR (Kích thước 300, Màu xanh ngọc, Mức chịu lỗi H)
-        $qrCode = QrCode::create($scanUrl)
+       $qrCode = QrCode::create($scanUrl)
             ->setEncoding(new Encoding('UTF-8'))
-            ->setErrorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->setErrorCorrectionLevel(ErrorCorrectionLevel::High) 
             ->setSize(300)
             ->setMargin(10)
-            ->setForegroundColor(new Color(5, 150, 105)); // Màu RGB của xanh ngọc
+            ->setForegroundColor(new Color(5, 150, 105));
 
         // Lấy thông tin Profile Doanh nghiệp
         $userProfile = \App\Models\UserProfile::where('user_id', Auth::id())->first();

@@ -35,7 +35,7 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-3">
                             @if($product->image_url)
-                                <img src="{{ asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="w-12 h-12 rounded-lg object-cover border border-gray-200">
+                                <img src="{{ getSecureImageUrl($product->image_url) }}" alt="{{ $product->name }}" class="w-12 h-12 rounded-lg object-cover border border-gray-200">
                             @else
                                 <div class="w-12 h-12 rounded-lg bg-gray-100 flex items-center justify-center border border-gray-200">
                                     <i class="fa-solid fa-box text-gray-400"></i>
