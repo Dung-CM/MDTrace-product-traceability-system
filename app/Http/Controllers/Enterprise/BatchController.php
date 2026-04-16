@@ -8,7 +8,12 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Endroid\QrCode\Color\Color;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Logo\Logo;
+use Endroid\QrCode\Writer\PngWriter;
 
 class BatchController extends Controller
 {
@@ -79,33 +84,36 @@ class BatchController extends Controller
 
         // Lấy chính xác tên miền Ngrok từ file .env (đảm bảo luôn có https://)
         $baseUrl = rtrim(env('APP_URL'), '/');
-        // Ghép nối thành URL chuẩn GS1 Digital Link
-       $scanUrl = url("/txng/01/{$gtin}/10/{$batchCode}");
-
-        // --- 2. TẠO MÃ QR TỪ URL CHUẨN (CÓ TÍCH HỢP LOGO DOANH NGHIỆP) ---
-        // Đổi đuôi file sang .png vì định dạng PNG hỗ trợ chèn ảnh đè lên tốt nhất
-        $qrFileName = 'qr_' . $batchCode . '_' . time() . '.svg'; 
+       $scanUrl = $baseUrl . "/txng/01/{$gtin}/10/{$batchCode}";
+       
+        // --- 2. TẠO MÃ QR TỪ URL CHUẨN (Dùng thư viện Endroid) ---
+        $qrFileName = 'qr_' . $batchCode . '_' . time() . '.png'; // Bắt buộc dùng PNG
         
-        // Cấu hình QR Code nền tảng (Size 300, Màu xanh ngọc, Mức chịu lỗi H cao nhất)
-        $qrBuilder = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                    ->size(300)
-                    ->color(5, 150, 105) 
-                    ->margin(2) 
-                    ->errorCorrection('H'); // Mức H: Cho phép QR bị che 30% vẫn quét được
+        $writer = new PngWriter();
 
-        // Lấy logo của doanh nghiệp đang đăng nhập
+        // Cấu hình mã QR (Kích thước 300, Màu xanh ngọc, Mức chịu lỗi H)
+        $qrCode = QrCode::create($scanUrl)
+            ->setEncoding(new Encoding('UTF-8'))
+            ->setErrorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->setSize(300)
+            ->setMargin(10)
+            ->setForegroundColor(new Color(5, 150, 105)); // Màu RGB của xanh ngọc
+
+        // Lấy thông tin Profile Doanh nghiệp
         $userProfile = \App\Models\UserProfile::where('user_id', Auth::id())->first();
-        
+        $logo = null;
+
+        // Nếu có Logo: Nạp logo vào
         if ($userProfile && $userProfile->logo_url && Storage::disk('public')->exists($userProfile->logo_url)) {
-            // Nếu có Logo: Chèn logo vào giữa (chiếm 20% diện tích)
-            $logoPath = storage_path('app/public/' . $userProfile->logo_url);
-            $qrContent = $qrBuilder->merge($logoPath, 0.2, true)->generate($scanUrl);
-        } else {
-            // Nếu chưa có Logo: Tạo mã QR nguyên bản
-            $qrContent = $qrBuilder->generate($scanUrl);
+            $logo = Logo::create(storage_path('app/public/' . $userProfile->logo_url))
+                ->setResizeToWidth(60); // Logo chiếm khoảng 20% chiều rộng QR (60/300)
         }
+
+        // Tiến hành vẽ mã QR (Có logo hoặc không có logo)
+        $result = $writer->write($qrCode, $logo);
                     
-        Storage::disk('public')->put('qrcodes/' . $qrFileName, $qrContent);
+        // Lưu file vào ổ cứng
+        Storage::disk('public')->put('qrcodes/' . $qrFileName, $result->getString());
         // --- 3. LƯU VÀO DATABASE ---
         Batch::create([
             'product_id'         => $product->id,
@@ -130,7 +138,7 @@ class BatchController extends Controller
         $filePath = storage_path('app/public/' . $batch->qr_code_url);
         
         if (file_exists($filePath)) {
-            return response()->download($filePath, 'QR_' . $batch->batch_code . '.svg');
+            return response()->download($filePath, 'QR_' . $batch->batch_code . '.png');
         }
 
         return back()->with('error', 'Không tìm thấy file QR Code!');
