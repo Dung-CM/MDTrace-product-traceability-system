@@ -35,4 +35,9 @@ class Product extends Model
     {
         return $this->hasMany(Batch::class);
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

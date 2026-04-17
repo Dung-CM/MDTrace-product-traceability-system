@@ -40,7 +40,7 @@ class PublicProductController extends Controller
         return view('public.products.index', compact('products', 'categories'));
     }
 
-    // Hàm hiển thị trang Chi tiết (Sẽ làm ở Giai đoạn 2)
+    // Hàm hiển thị trang Chi tiết 
     public function show($id)
     {
         $product = Product::with('category')->findOrFail($id);

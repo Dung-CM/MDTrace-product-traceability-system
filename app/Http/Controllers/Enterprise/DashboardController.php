@@ -10,6 +10,7 @@ use App\Models\Batch;
 use App\Models\ScanHistory;
 use Carbon\Carbon;
 
+
 class DashboardController extends Controller
 {
     public function index()

@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Category; 
+use App\Models\BlockchainTransaction;
+use App\Models\ScanHistory;
+
 class AdminController extends Controller
 {
     // Hiển thị giao diện Dashboard Admin
@@ -21,7 +24,15 @@ class AdminController extends Controller
                                   ->orderBy('created_at', 'desc')
                                   ->get();
 
-        return view('admin.dashboard', compact('pendingEnterprises'));
+       // 2. DỮ LIỆU MỚI: Lấy 8 giao dịch thật mới nhất trên Sổ cái (Blockchain)
+        $recentBlocks = BlockchainTransaction::with('batch.product')
+                                ->latest()
+                                ->take(8)
+                                ->get();
+
+        // 3. Nhớ khai báo thêm 'recentBlocks' vào trong hàm compact để truyền ra View
+        return view('admin.dashboard', compact('pendingEnterprises', 'recentBlocks'));
+    
     }
 
     // Xử lý nút "Duyệt" doanh nghiệp
@@ -237,5 +248,56 @@ class AdminController extends Controller
 
         $admin->save();
         return back()->with('success', 'Đã cập nhật thông tin cá nhân thành công!');
+    }
+  // --- QUẢN LÝ LỊCH SỬ QUÉT MÃ TOÀN HỆ THỐNG ---
+    public function scanHistory(Request $request)
+    {
+        $query = \App\Models\ScanHistory::with(['batch.product.user.profile']);
+
+        // 1. Lọc theo Doanh nghiệp (Lấy ID của user)
+        if ($request->filled('enterprise_id')) {
+            $query->whereHas('batch.product', function($q) use ($request) {
+                $q->where('user_id', $request->enterprise_id);
+            });
+        }
+
+        // 2. Lọc theo Thiết bị (Android, iOS, Win, Mac)
+        if ($request->filled('device_type')) {
+            $query->where('device_info', 'like', '%' . $request->device_type . '%');
+        }
+
+        // 3. Tìm kiếm tự do (Mã IP hoặc Tên sản phẩm)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('ip_address', 'like', "%{$search}%")
+                  ->orWhereHas('batch.product', function($pq) use ($search) {
+                      $pq->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $scanHistories = $query->latest()->paginate(20)->withQueryString();
+
+        // Lấy danh sách doanh nghiệp đang active để đưa vào ô Select
+        $enterprises = \App\Models\User::where('role', 'enterprise')->where('status', 'active')->with('profile')->get();
+
+        return view('admin.scans.index', compact('scanHistories', 'enterprises'));
+    }
+    // --- SỔ CÁI BLOCKCHAIN (BLOCK EXPLORER) ---
+    public function blockExplorer(Request $request)
+    {
+        // Lấy danh sách giao dịch kèm thông tin lô hàng và sản phẩm
+        $query = \App\Models\BlockchainTransaction::with('batch.product');
+
+        // Thêm chức năng tìm kiếm theo mã Hash nếu cần
+        if ($request->has('search') && $request->search != '') {
+            $query->where('transaction_hash', 'like', '%' . $request->search . '%');
+        }
+
+        // Phân trang 20 giao dịch / trang
+        $blocks = $query->latest()->paginate(20)->withQueryString();
+
+        return view('admin.block_explorer', compact('blocks'));
     }
 }

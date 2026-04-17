@@ -13,7 +13,7 @@ class DashboardController extends Controller
 
         // Nếu là Admin
         if ($user->role === 'admin') {
-            return view('admin.dashboard');
+            return view('admin.stats');
         }
 
         // Nếu là Enterprise

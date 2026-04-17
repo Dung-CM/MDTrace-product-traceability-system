@@ -133,6 +133,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/categories', [App\Http\Controllers\CategoryController::class, 'store'])->name('admin.categories.store');
         Route::put('/categories/{id}', [App\Http\Controllers\CategoryController::class, 'update'])->name('admin.categories.update');
         Route::delete('/categories/{id}', [App\Http\Controllers\CategoryController::class, 'destroy'])->name('admin.categories.destroy');
+        // Route hiển thị lịch sử quét mã trên Dashboard Admin
+        Route::get('/scans', [AdminController::class, 'scanHistory'])->name('admin.scans.index');
+        Route::get('/block-explorer', [App\Http\Controllers\AdminController::class, 'blockExplorer'])->name('admin.block_explorer');
     });
 
    

@@ -106,28 +106,51 @@
         <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                 <h3 class="font-bold text-gray-800">Lô hàng gần đây</h3>
-                <a href="{{ route('enterprise.batches.index') }}" class="text-sm text-emerald-600 hover:underline">Xem tất cả</a>
+                <a href="{{ route('enterprise.batches.index') }}" class="text-sm text-emerald-600 hover:underline font-semibold">Quản lý lô hàng <i class="fa-solid fa-arrow-right ml-1"></i></a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-gray-50 text-gray-500">
+                    <thead class="bg-gray-50 text-gray-500 uppercase text-[11px] tracking-wider">
                         <tr>
-                            <th class="px-6 py-3 font-medium">Mã lô (Mô phỏng Hash)</th>
-                            <th class="px-6 py-3 font-medium">Sản phẩm</th>
-                            <th class="px-6 py-3 font-medium">Ngày tạo</th>
-                            <th class="px-6 py-3 font-medium">Trạng thái</th>
+                            <th class="px-6 py-4 font-bold">Mã Giao Dịch (Txn Hash)</th>
+                            <th class="px-6 py-4 font-bold">Sản phẩm</th>
+                            <th class="px-6 py-4 font-bold">Ngày tạo</th>
+                            <th class="px-6 py-4 font-bold">Trạng thái</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
                         @forelse($recentBatches as $batch)
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 font-mono text-xs text-gray-500">0x{{ substr(md5($batch->id . $batch->batch_code), 0, 8) }}...</td>
+                        @php
+                            // Kiểm tra xem lô hàng này đã có giao dịch trên sổ cái chưa
+                            $transaction = \App\Models\BlockchainTransaction::where('batch_id', $batch->id)->first();
+                        @endphp
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 font-mono text-xs">
+                                @if($transaction)
+                                    <div class="text-emerald-600 font-bold flex items-center gap-2" title="{{ $transaction->transaction_hash }}">
+                                        <i class="fa-brands fa-hive"></i> {{ substr($transaction->transaction_hash, 0, 16) }}...
+                                    </div>
+                                @else
+                                    <span class="text-gray-400 italic"><i class="fa-solid fa-hourglass-half mr-1"></i> Chưa lên chuỗi</span>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 font-medium text-gray-800">{{ $batch->product->name ?? 'N/A' }}</td>
-                            <td class="px-6 py-4 text-gray-500">{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
-                            <td class="px-6 py-4"><span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-semibold">Đã tạo QR</span></td>
+                            <td class="px-6 py-4 text-gray-500 text-xs">{{ \Carbon\Carbon::parse($batch->created_at)->format('d/m/Y') }}</td>
+                            <td class="px-6 py-4">
+                                @if($transaction)
+                                    <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-[10px] font-bold uppercase border border-emerald-200">Đã Mint</span>
+                                @else
+                                    <span class="bg-yellow-50 text-yellow-600 px-2 py-1 rounded-md text-[10px] font-bold uppercase border border-yellow-200">Chờ Mint</span>
+                                @endif
+                            </td>
                         </tr>
                         @empty
-                        <tr><td colspan="4" class="px-6 py-4 text-center text-gray-500">Chưa có lô hàng nào.</td></tr>
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+                                <i class="fa-solid fa-box-open text-3xl mb-2 opacity-20"></i>
+                                <p>Chưa có lô hàng nào.</p>
+                            </td>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>

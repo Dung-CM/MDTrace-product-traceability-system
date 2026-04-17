@@ -19,43 +19,72 @@
         </div>
 
         <nav class="flex-1 py-6 px-4 space-y-2">
-           <a href="{{ route('admin.dashboard.stats') }}" 
-            class="flex items-center gap-3 {{ Route::is('admin.dashboard.stats') ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }} px-4 py-3 rounded-xl transition shadow-sm">
+            <a href="{{ route('admin.dashboard.stats') }}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl transition shadow-sm {{ Route::is('admin.dashboard.stats') ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
                 <i class="fa-solid fa-chart-pie w-5 text-center"></i>
                 <span class="font-semibold">Tổng quan hệ thống</span>
             </a>
+            
             <div x-data="{ open: {{ (Route::is('admin.dashboard') || Route::is('admin.enterprises.active')) ? 'true' : 'false' }} }">
                 <button @click="open = !open" 
                         class="w-full flex items-center justify-between gap-3 text-gray-400 hover:text-white hover:bg-white/5 px-4 py-3 rounded-xl transition group">
                     <div class="flex items-center gap-3">
-                        <i class="fa-solid fa-building-shield w-5 text-center group-hover:text-emerald-400"></i>
-                        <span class="font-semibold">Quản lý Doanh nghiệp</span>
+                        <i class="fa-solid fa-building-shield w-5 text-center {{ (Route::is('admin.dashboard') || Route::is('admin.enterprises.active')) ? 'text-emerald-400' : 'group-hover:text-emerald-400' }}"></i>
+                        <span class="font-semibold {{ (Route::is('admin.dashboard') || Route::is('admin.enterprises.active')) ? 'text-white' : '' }}">Quản lý Doanh nghiệp</span>
                     </div>
                     <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
                 </button>
 
-                <div x-show="open" x-transition.origin.top class="mt-2 ml-6 space-y-1 border-l border-emerald-500/30 pl-4">
+                <div x-show="open" x-transition.origin.top class="mt-2 ml-6 space-y-1 border-l border-emerald-500/30 pl-4" style="display: {{ (Route::is('admin.dashboard') || Route::is('admin.enterprises.active')) ? 'block' : 'none' }};">
                    <a href="{{ route('admin.dashboard') }}" 
-                       class="flex items-center gap-2 py-2 text-sm {{ Route::is('admin.dashboard') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }} transition">
+                       class="flex items-center gap-2 py-2 text-sm transition {{ Route::is('admin.dashboard') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }}">
                         <i class="fa-solid fa-clipboard-question w-4 text-center {{ Route::is('admin.dashboard') ? 'text-emerald-400' : 'text-amber-500/70' }}"></i>
                         <span>Duyệt hồ sơ mới</span>
                     </a>
 
                     <a href="{{ route('admin.enterprises.active') }}" 
-                       class="flex items-center gap-2 py-2 text-sm {{ Route::is('admin.enterprises.active') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }} transition">
+                       class="flex items-center gap-2 py-2 text-sm transition {{ Route::is('admin.enterprises.active') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }}">
                         <i class="fa-solid fa-building-circle-check w-4 text-center {{ Route::is('admin.enterprises.active') ? 'text-emerald-400' : 'text-blue-400/70' }}"></i>
                         <span>Đang hoạt động</span>
                     </a>
                 </div>
             </div>
+            
+            <div x-data="{ open: {{ (Route::is('admin.categories.*') || Route::is('admin.block_explorer')) ? 'true' : 'false' }} }" class="mt-4">
+                <button @click="open = !open" 
+                        class="w-full flex items-center justify-between gap-3 text-gray-400 hover:text-white hover:bg-white/5 px-4 py-3 rounded-xl transition group">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-boxes-stacked w-5 text-center group-hover:text-emerald-400 {{ (Route::is('admin.categories.*') || Route::is('admin.block_explorer')) ? 'text-emerald-400' : '' }}"></i>
+                        <span class="font-semibold {{ (Route::is('admin.categories.*') || Route::is('admin.block_explorer')) ? 'text-white' : '' }}">Quản lý Sản phẩm</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down text-xs transition-transform duration-300" :class="open ? 'rotate-180' : ''"></i>
+                </button>
 
-            <a href="{{ route('admin.categories.index') }}" class="flex items-center gap-3 text-gray-400 hover:text-white hover:bg-white/5 px-4 py-3 rounded-xl transition">
-                <i class="fa-solid fa-layer-group w-5 text-center"></i>
-                <span class="font-semibold">Danh mục sản phẩm</span>
+                <div x-show="open" x-transition.origin.top class="mt-2 ml-6 space-y-1 border-l border-emerald-500/30 pl-4" style="display: {{ (Route::is('admin.categories.*') || Route::is('admin.block_explorer')) ? 'block' : 'none' }};">
+                   <a href="{{ route('admin.categories.index') }}" 
+                       class="flex items-center gap-2 py-2 text-sm transition {{ Route::is('admin.categories.*') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        <i class="fa-solid fa-layer-group w-4 text-center {{ Route::is('admin.categories.*') ? 'text-emerald-400' : 'text-indigo-400/70' }}"></i>
+                        <span>Danh mục sản phẩm</span>
+                    </a>
+
+                    <a href="{{ route('admin.block_explorer') }}" 
+                       class="flex items-center gap-2 py-2 text-sm transition {{ Route::is('admin.block_explorer') ? 'text-emerald-400 font-bold' : 'text-gray-400 hover:text-white' }}">
+                        <i class="fa-brands fa-hive w-4 text-center {{ Route::is('admin.block_explorer') ? 'text-emerald-400' : 'text-amber-400/70' }}"></i>
+                        <span>Sổ cái Blockchain</span>
+                    </a>
+                </div>
+            </div>
+            
+            <a href="{{ route('admin.scans.index') }}" 
+               class="flex items-center gap-3 px-4 py-3 rounded-xl transition mt-4 {{ Route::is('admin.scans.index') ? 'bg-emerald-600 text-white shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
+                <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i>
+                <span class="font-semibold">Lịch sử quét mã</span>
             </a>
-             <a href="{{ route('admin.profile') }}" 
+
+            <a href="{{ route('admin.profile') }}" 
                class="flex items-center gap-3 px-4 py-3 rounded-xl transition shadow-sm mt-4 {{ Route::is('admin.profile') ? 'bg-emerald-600 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5' }}">
-                <i class="fa-solid fa-user-gear w-5 text-center"></i><span class="font-semibold">Hồ sơ cá nhân</span>
+                <i class="fa-solid fa-user-gear w-5 text-center"></i>
+                <span class="font-semibold">Hồ sơ cá nhân</span>
             </a>
         </nav>
 
