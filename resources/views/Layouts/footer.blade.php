@@ -30,11 +30,11 @@
                 <h4 class="text-white font-semibold mb-6">LIÊN KẾT NHANH</h4>
                 <ul class="space-y-3 text-sm">
                     <li><a href="#how-it-works" class="hover:text-emerald-400 transition">Quy trình</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">Tính năng</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">Công nghệ</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">Bảng giá</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">API Documentation</a></li>
-                    <li><a href="#" class="hover:text-emerald-400 transition">Đối tác</a></li>
+                    <li><a href="#benefits" class="hover:text-emerald-400 transition">Lợi ích</a></li>
+                    <li><a href="#testimonials" class="hover:text-emerald-400 transition">Đánh giá</a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition">Sản Phẩm </a></li>
+                    <li><a href="#" class="hover:text-emerald-400 transition">Doanh nghiệp</a></li>
+                   
                 </ul>
             </div>
 

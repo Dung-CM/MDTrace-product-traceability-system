@@ -35,6 +35,8 @@
             @csrf
             @method('PUT')
             
+            <input type="hidden" name="trace_code" value="{{ $product->trace_code }}">
+            
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-sm">
                     <h3 class="text-sm font-bold text-red-800">Không thể lưu, vui lòng kiểm tra lại:</h3>

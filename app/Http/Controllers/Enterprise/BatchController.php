@@ -2,6 +2,12 @@
 
 namespace App\Http\Controllers\Enterprise;
 
+use Web3\Web3;
+use Web3\Contract;
+use Web3\Providers\HttpProvider;
+use Web3\RequestManagers\HttpRequestManager;
+use kornrunner\Keccak;
+use Web3p\EthereumTx\Transaction;
 use App\Http\Controllers\Controller;
 use App\Models\Batch;
 use App\Models\Product;
@@ -157,46 +163,128 @@ class BatchController extends Controller
         $batch->delete();
         return redirect()->route('enterprise.batches.index')->with('success', 'Đã xóa lô hàng thành công!');
     }
-    // Băm dữ liệu và lưu lên Private Ledger / IPFS Node
-    public function mintToBlockchain($id)
-    {
-        $batch = \App\Models\Batch::with('product')->findOrFail($id);
+   public function mintToBlockchain($id)
+        {
+            $batch = \App\Models\Batch::with('product')->findOrFail($id);
 
-        // 1. Kiểm tra xem lô hàng này đã lên chuỗi chưa
-        $exists = \App\Models\BlockchainTransaction::where('batch_id', $id)->first();
-        if ($exists) {
-            return back()->with('error', 'Lô hàng này đã được đưa lên chuỗi trước đó. Không thể ghi đè!');
+            // 1. Kiểm tra tồn tại
+            $exists = \App\Models\BlockchainTransaction::where('batch_id', $id)->first();
+            if ($exists) {
+                return back()->with('error', 'Lô hàng này đã tồn tại trên Blockchain!');
+            }
+
+            // 2. Hash Dữ liệu
+            $payload = [
+                'batch_code' => $batch->batch_code,
+                'product_name' => $batch->product->name,
+                'mfg' => $batch->manufacturing_date,
+                'exp' => $batch->expiry_date,
+            ];
+            $dataHash = '0x' . hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
+
+            try {
+                // --- BẮT ĐẦU PHẦN KÝ OFFLINE ---
+                $contractAddress = env('BLOCKCHAIN_CONTRACT_ADDRESS');
+                $privateKey = env('BLOCKCHAIN_PRIVATE_KEY'); // Đảm bảo trong .env ĐÃ CÓ biến này
+                $fromAddress = '0x8991C8C5271976CEBF3A082A971e166BB4f3A160'; // Ví dụ: 0x899...
+
+                // Khởi tạo Web3
+               // Dùng Guzzle Client để ÉP Wampserver bỏ qua xác thực SSL (Chỉ dùng cho Localhost)
+                    $client = new \GuzzleHttp\Client(['verify' => false]); 
+                    $requestManager = new \Web3\RequestManagers\HttpRequestManager(env('BLOCKCHAIN_RPC_URL'), 10, $client);
+                    $web3 = new \Web3\Web3(new \Web3\Providers\HttpProvider($requestManager));
+                $eth = $web3->eth;
+
+             // 3. Lấy Nonce (số thứ tự giao dịch của ví)
+                $nonceStr = '';
+                $eth->getTransactionCount($fromAddress, 'pending', function ($err, $result) use (&$nonceStr) {
+                    if ($err !== null) {
+                        throw new \Exception('Lỗi kết nối Alchemy (Nonce): ' . $err->getMessage());
+                    }
+                    $nonceStr = $result->toString(); // Trả về chuỗi số nguyên (vd: "15")
+                });
+
+                if ($nonceStr === '') {
+                    throw new \Exception('Không lấy được số Nonce từ mạng lưới.');
+                }
+                $nonceHex = '0x' . dechex((int)$nonceStr);
+                // 4. Lấy dữ liệu Data Hex của hàm mintBatch từ Contract ABI
+              $contract = new Contract($web3->provider, '[
+                    {
+                        "inputs": [
+                            { "internalType": "string", "name": "_batchCode", "type": "string" },
+                            { "internalType": "string", "name": "_dataHash", "type": "string" },
+                            { "internalType": "uint256", "name": "timestamp", "type": "uint256" }
+                        ],
+                        "name": "mintBatch",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    }
+                ]');
+                              // KHÔNG DÙNG CALLBACK CHO GETDATA
+              $timestamp = (int) time(); // Tạo tham số thứ 3: Thời gian hiện tại bằng số nguyên
+
+                $data = $contract->at($contractAddress)->getData(
+                    'mintBatch', 
+                    $batch->batch_code, // Tham số 1: Mã lô (string)
+                    $dataHash,          // Tham số 2: Mã băm dữ liệu (string)
+                    $timestamp          // Tham số 3: Thời gian mint (uint256)
+                );
+
+                if (!$data) {
+                    throw new \Exception('Không thể tạo dữ liệu giao dịch (Data rỗng).');
+                }
+
+                // Đảm bảo data luôn có chữ 0x ở đầu
+                $cleanData = str_starts_with($data, '0x') ? $data : '0x' . $data;
+
+               // 5. Khởi tạo Giao dịch (Transaction)
+                $txParams = [
+                    'nonce'    => $nonceHex,
+                    'from'     => $fromAddress,
+                    'to'       => $contractAddress,
+                    'gas'      => '0x' . dechex(300000), // 300,000 gas cho an toàn
+                    'gasPrice' => '0x' . dechex(15000000000), // 15 Gwei
+                    'value'    => '0x0', 
+                    'data'     => $cleanData,
+                    'chainId'  => 11155111 // Sepolia ID
+                ];
+
+                $transaction = new Transaction($txParams);
+                
+                // 6. KÝ GIAO DỊCH BẰNG PRIVATE KEY TẠI SERVER
+                // Cắt bỏ an toàn chữ '0x' ở đầu Private Key
+                $cleanPrivateKey = str_starts_with($privateKey, '0x') ? substr($privateKey, 2) : $privateKey;
+                $signedTx = $transaction->sign($cleanPrivateKey);
+
+                // 7. GỬI GIAO DỊCH ĐÃ KÝ LÊN ALCHEMY (Hàm này bắt buộc có callback)
+                $txHash = null;
+                $finalTx = str_starts_with($signedTx, '0x') ? $signedTx : '0x' . $signedTx;
+
+                $eth->sendRawTransaction($finalTx, function ($err, $result) use (&$txHash) {
+                    if ($err !== null) {
+                        throw new \Exception('Lỗi gửi giao dịch: ' . $err->getMessage());
+                    }
+                    $txHash = $result;
+                });
+
+                if (!$txHash) {
+                    throw new \Exception('Không nhận được Transaction Hash trả về.');
+                }
+
+                // 8. Lưu Transaction Hash vào database
+                \App\Models\BlockchainTransaction::create([
+                    'batch_id'         => $batch->id,
+                    'transaction_hash' => $txHash,
+                    'network'          => 'Sepolia Testnet',
+                    'status'           => 1
+                ]);
+
+                return back()->with('success', 'Thành công! Đã đẩy dữ liệu lên Blockchain Sepolia. Mã Hash: ' . $txHash);
+
+            } catch (\Exception $e) {
+                return back()->with('error', 'Lỗi Blockchain: ' . $e->getMessage());
+            }
         }
-
-        // 2. GOM DỮ LIỆU ĐỂ BĂM (Data Payload)
-        // Đây là những thông tin quan trọng nhất, sửa 1 dấu chấm hash cũng sẽ đổi
-        $payload = [
-            'batch_id' => $batch->id,
-            'batch_code' => $batch->batch_code,
-            'product_name' => $batch->product->name,
-            'manufacturing_date' => $batch->manufacturing_date,
-            'expiry_date' => $batch->expiry_date,
-            // Nếu bạn có bảng logs (nhật ký), hãy kéo dữ liệu logs vào đây:
-            // 'logs' => $batch->logs->toArray() 
-        ];
-
-        // 3. Ép thành chuỗi JSON chuẩn
-        $jsonData = json_encode($payload, JSON_UNESCAPED_UNICODE);
-
-        // 4. THUẬT TOÁN BĂM SHA-256 (Tạo ra chuỗi 64 ký tự bất biến)
-        $hash = hash('sha256', $jsonData);
-
-        // Thêm tiền tố 0x để trông giống chuẩn mã băm Blockchain / Smart Contract
-        $finalHash = '0x' . $hash;
-
-        // 5. LƯU VÀO SỔ CÁI (Database)
-        \App\Models\BlockchainTransaction::create([
-            'batch_id' => $batch->id,
-            'transaction_hash' => $finalHash,
-            'network' => 'MDTrace IPFS-Simulated Network', // Phù hợp với định hướng IPFS
-            'status' => 1
-        ]);
-
-        return back()->with('success', 'Đã đóng gói và mã hóa (Hash) dữ liệu lô hàng thành công!');
-    }
 }

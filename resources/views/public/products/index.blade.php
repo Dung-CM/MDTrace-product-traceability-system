@@ -43,7 +43,7 @@
             <a href="{{ route('public.products.show', $product->id) }}" class="group bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full hover:-translate-y-1">
                 <div class="relative aspect-square sm:aspect-[4/3] overflow-hidden bg-gray-50 flex-shrink-0 border-b border-gray-100">
                     @if($product->image_url)
-                        <img src="{{ getSecureImageUrl($product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        <img src="{{ str_starts_with($product->image_url, 'http') ? $product->image_url : asset('storage/' . $product->image_url) }}" alt="{{ $product->name }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
                     @else
                         <div class="w-full h-full flex items-center justify-center">
                             <i class="fa-solid fa-image text-gray-300 text-5xl"></i>

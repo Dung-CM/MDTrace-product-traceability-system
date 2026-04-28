@@ -27,7 +27,7 @@
                         <i class="fa-solid fa-building text-5xl text-emerald-200 group-hover:scale-110 transition-transform"></i>
                         <div class="w-16 h-16 mx-auto -mt-8 bg-white border-4 border-emerald-50 rounded-full flex items-center justify-center overflow-hidden shadow-sm">
                             @if($enterprise->profile && $enterprise->profile->logo_url)
-                                <img src="{{ getSecureImageUrl($enterprise->profile->logo_url) }}" alt="{{ $enterprise->profile->company_name ?? $enterprise->name }}" class="w-full h-full object-cover">
+                                <img src="{{ str_starts_with($enterprise->profile->logo_url, 'http') ? $enterprise->profile->logo_url : asset('storage/' . $enterprise->profile->logo_url) }}" alt="{{ $enterprise->profile->company_name ?? $enterprise->name }}" class="w-full h-full object-cover">
                             @else
                                 <span class="text-2xl font-black text-emerald-500">{{ strtoupper(substr($enterprise->name, 0, 1)) }}</span>
                             @endif

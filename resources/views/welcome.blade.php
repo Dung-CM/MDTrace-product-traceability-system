@@ -7,17 +7,25 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <script>
+   <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
-                    },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
                     colors: {
                         primary: '#0A2540',
                         accent: '#10B981',
                         'accent-dark': '#059669',
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'float-delayed': 'float 6s ease-in-out 3s infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
                     }
                 }
             }
@@ -25,8 +33,23 @@
     </script>
 
     <style>
-        .hero-bg {
+       .hero-bg {
             background: linear-gradient(135deg, #0A2540 0%, #1E3A8A 100%);
+        }
+        /* Hiệu ứng tia laser quét lên xuống */
+        @keyframes scanline {
+            0% { top: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            background: #10B981;
+            box-shadow: 0 0 15px 5px rgba(16, 185, 129, 0.5);
+            animation: scanline 2.5s ease-in-out infinite alternate;
         }
         .stat-card {
             transition: all 0.3s;
@@ -85,119 +108,108 @@
                 </div>
             </div>
 
-        <!-- RIGHT: PHONE MOCKUP GIỐNG FIGMA -->
-        <!-- <div class="flex justify-center relative">
-            <div class="relative w-[320px]">
+        <div class="relative flex justify-center items-center mt-10 md:mt-0">
+            
+            <div class="absolute z-20 left-0 md:left-[-20px] top-[40%] bg-white text-gray-900 px-5 py-3 rounded-2xl shadow-2xl font-bold text-lg border border-gray-100 animate-float">
+                <span class="text-emerald-600 text-2xl">99.9%</span><br>
+                <span class="text-xs font-normal text-gray-500">Tỉ lệ xác thực</span>
+            </div>
+
+            <div class="absolute z-20 right-0 md:right-[-40px] top-[15%] bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white p-4 rounded-2xl shadow-2xl animate-float-delayed">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-emerald-400 animate-pulse">●</span>
+                    <span class="font-bold text-sm tracking-wide">BLOCK #4281933</span>
+                </div>
+                <div class="text-[11px] text-gray-400 font-mono">0x3F9a...c81b4</div>
+                <div class="text-emerald-400 text-xs mt-2 font-medium bg-emerald-400/10 inline-block px-2 py-1 rounded">✔ Xác nhận hợp lệ</div>
+            </div>
+
+            <div class="relative w-[280px] md:w-[320px] h-[580px] md:h-[640px] bg-gray-900 rounded-[3rem] border-[8px] md:border-[12px] border-gray-900 shadow-2xl flex items-center justify-center">
                 
-              
-                <div class="bg-[#0f172a] rounded-[52px] p-3 shadow-2xl phone-mockup border-8 border-black relative z-10">
-                    <div class="bg-white rounded-[40px] overflow-hidden h-[620px] relative">
-                        
-                       
-                        <div class="h-11 bg-gradient-to-r from-blue-700 to-indigo-700 flex items-center px-6 text-white text-xs">
-                            <div class="flex-1">9:41</div>
-                            <div class="flex items-center gap-1.5">
+                <div class="absolute top-0 w-32 h-6 bg-gray-900 rounded-b-2xl z-20"></div>
+
+                <div class="relative w-full h-full bg-white rounded-[2.2rem] overflow-hidden flex flex-col">
+                    
+                    <div class="bg-gray-900 text-white px-5 pt-8 pb-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-xs font-medium">9:41</span>
+                            <div class="flex gap-1.5 text-xs">
                                 <i class="fa-solid fa-signal"></i>
                                 <i class="fa-solid fa-wifi"></i>
-                                <span>92%</span>
+                                <i class="fa-solid fa-battery-full"></i>
                             </div>
                         </div>
+                        <div class="font-bold text-xl tracking-tight">MDTrace Scanner</div>
+                    </div>
 
-                       
-                        <div class="bg-white border-b px-5 py-4 flex items-center justify-between">
-                            <span class="font-semibold text-lg">MDTrace</span>
-                            <div class="bg-emerald-500 text-white text-[10px] px-3 py-1 rounded-full flex items-center gap-1 font-medium">
-                                <span class="w-2 h-2 bg-white rounded-full animate-pulse"></span>
-                                BLOCK #4,281,933
-                            </div>
-                        </div>
+                    <div class="relative flex-1 bg-gray-100 overflow-hidden group">
+                        <img src="{{ asset('storage/avatars/hero_scan.png') }}" 
+                             onerror="this.src='https://images.unsplash.com/photo-1595853035070-59a39fe84dd3?q=80&w=600&auto=format&fit=crop'" 
+                             class="absolute inset-0 w-full h-full object-cover opacity-80" alt="Scanning product">
+                        
+                        <div class="absolute inset-0 bg-black/40"></div>
 
-                      
-                        <div class="relative h-80 bg-gray-100 flex items-center justify-center">
-                            <img src="https://via.placeholder.com/280x280/10B981/ffffff?text=QR+CODE" 
-                                 alt="QR Code" 
-                                 class="w-56 h-56 object-contain">
-                          
-                            <div class="absolute border-4 border-emerald-400 border-dashed w-64 h-64 rounded-xl animate-[pulse_2s_infinite]"></div>
-                            <div class="absolute inset-0 flex items-center justify-center">
-                                <div class="w-64 h-64 border-2 border-emerald-400 rounded-xl relative">
-                                    <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400"></div>
-                                    <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400"></div>
-                                    <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400"></div>
-                                    <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400"></div>
-                                </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="relative w-48 h-48 border border-white/30 rounded-xl">
+                                <div class="absolute -top-1 -left-1 w-6 h-6 border-t-4 border-l-4 border-emerald-400 rounded-tl-lg"></div>
+                                <div class="absolute -top-1 -right-1 w-6 h-6 border-t-4 border-r-4 border-emerald-400 rounded-tr-lg"></div>
+                                <div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-4 border-l-4 border-emerald-400 rounded-bl-lg"></div>
+                                <div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-4 border-r-4 border-emerald-400 rounded-br-lg"></div>
+                                
+                                <div class="scanner-line"></div>
                             </div>
-                        </div>
-
-                      
-                        <div class="p-6 space-y-4">
-                            <div class="bg-emerald-100 text-emerald-700 text-center py-2.5 rounded-2xl text-sm font-semibold">
-                                ✅ ĐÃ XÁC THỰC BLOCKCHAIN
-                            </div>
-                            
-                            <div>
-                                <h3 class="font-bold text-xl">Rau cải hữu cơ</h3>
-                                <p class="text-emerald-600 font-medium">#TRC2024001</p>
-                            </div>
-
-                            <div class="grid grid-cols-2 gap-y-3 text-sm">
-                                <div class="text-gray-500">Xuất xứ</div>
-                                <div class="text-right font-medium">Đà Lạt, Lâm Đồng</div>
-                                <div class="text-gray-500">Ngày thu hoạch</div>
-                                <div class="text-right font-medium">28/03/2026</div>
-                                <div class="text-gray-500">Nông trại</div>
-                                <div class="text-right font-medium">HTX Rau sạch Đà Lạt</div>
-                            </div>
-
-                            <button onclick="alert('Đang xem hành trình đầy đủ...')" 
-                                    class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 transition">
-                                Xem hành trình đầy đủ 
-                                <i class="fa-solid fa-arrow-right"></i>
-                            </button>
                         </div>
                     </div>
-                </div>
 
-              
-                <div class="absolute -left-6 top-52 bg-white text-gray-900 px-5 py-3 rounded-2xl shadow-2xl font-bold text-lg border border-gray-100">
-                    99.9%<br>
-                    <span class="text-xs font-normal text-gray-500">Tỉ lệ xác thực</span>
-                </div>
-
-                
-                <div class="absolute -right-8 top-20 bg-gray-900 text-white text-xs p-4 rounded-2xl shadow-2xl max-w-[180px]">
-                    <div class="flex items-center gap-2 mb-2">
-                        <span class="text-emerald-400">●</span>
-                        <span class="font-medium">BLOCK #4,281,933</span>
+                    <div class="bg-white p-5 shadow-[0_-10px_20px_rgba(0,0,0,0.05)] rounded-t-3xl relative z-10 -mt-4">
+                        <div class="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
+                        <div class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3 border border-emerald-200">
+                            <i class="fa-solid fa-shield-check mr-1"></i> XÁC THỰC BLOCKCHAIN
+                        </div>
+                        <h3 class="font-bold text-gray-900 text-lg">Cà phê Hữu cơ Nguyên chất</h3>
+                        <p class="text-sm text-gray-500 mb-3">Lô: #BATCH-8892</p>
+                        
+                        <button class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-colors">
+                            Xem hành trình <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
                     </div>
-                    <div class="text-[10px] text-gray-400">0x3F9a2...c81b4</div>
-                    <div class="text-emerald-400 text-[10px] mt-1">✔ Xác nhận: Hợp lệ</div>
-                </div>-->
+                </div>
+            </div>
+        </div>
 
             </div>
         </div>
     </div>
 </section>
 
-    {{-- STATS SECTION - Theo ảnh Figma --}}
-    <section class="bg-primary py-12 text-white">
+   {{-- STATS SECTION - SỬ DỤNG DỮ LIỆU THẬT & HIỆU ỨNG ĐẾM SỐ --}}
+    <section class="bg-[#0A2540] py-12 text-white relative z-10 border-t border-white/10">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                <div class="stat-card">
-                    <div class="text-5xl font-bold text-accent">0</div>
-                    <div class="text-sm text-gray-300 mt-2">Doanh nghiệp tin dùng</div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center" id="stats-section">
+                
+                <div class="stat-card group">
+                    <div class="text-5xl font-bold text-emerald-400 flex justify-center items-center gap-1">
+                        <span class="count-up" data-target="{{ $enterpriseCount ?? 0 }}">0</span>
+                        <span class="text-3xl text-emerald-500">+</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-2 font-medium group-hover:text-emerald-300 transition-colors">Doanh nghiệp tin dùng</div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-5xl font-bold text-accent">0</div>
-                    <div class="text-sm text-gray-300 mt-2">Mã QR đã tạo</div>
+                
+                <div class="stat-card group">
+                    <div class="text-5xl font-bold text-emerald-400 flex justify-center items-center">
+                        <span class="count-up" data-target="{{ $qrCount ?? 0 }}">0</span>
+                    </div>
+                    <div class="text-sm text-gray-400 mt-2 font-medium group-hover:text-emerald-300 transition-colors">Mã QR đã tạo</div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-5xl font-bold text-accent">99.9%</div>
-                    <div class="text-sm text-gray-300 mt-2">Uptime đảm bảo</div>
+                
+                <div class="stat-card group">
+                    <div class="text-5xl font-bold text-emerald-400">99.9%</div>
+                    <div class="text-sm text-gray-400 mt-2 font-medium group-hover:text-emerald-300 transition-colors">Uptime đảm bảo</div>
                 </div>
-                <div class="stat-card">
-                    <div class="text-5xl font-bold text-accent">&lt;1s</div>
-                    <div class="text-sm text-gray-300 mt-2">Tốc độ truy xuất</div>
+                
+                <div class="stat-card group">
+                    <div class="text-5xl font-bold text-emerald-400">&lt;1s</div>
+                    <div class="text-sm text-gray-400 mt-2 font-medium group-hover:text-emerald-300 transition-colors">Tốc độ truy xuất</div>
                 </div>
             </div>
         </div>
@@ -520,6 +532,53 @@
                     target.scrollIntoView({ behavior: 'smooth' });
                 }
             });
+        });
+    </script>
+    {{-- SCRIPT HIỆU ỨNG ĐẾM SỐ LÊN (COUNT UP) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const counters = document.querySelectorAll('.count-up');
+            
+            // Cấu hình tốc độ chạy (Tăng số này lên nếu muốn chạy chậm hơn, giảm đi nếu muốn nhanh hơn)
+            const speed = 40; 
+
+            const animateCounters = () => {
+                counters.forEach(counter => {
+                    const updateCount = () => {
+                        const target = +counter.getAttribute('data-target'); // Lấy số đích từ Backend
+                        const count = +counter.innerText; // Lấy số đang hiển thị hiện tại
+                        
+                        // Tính bước nhảy: Đảm bảo bước nhảy ít nhất là 1 để tránh kẹt ở số nhỏ
+                        const increment = Math.max(Math.ceil(target / speed), 1);
+
+                        // Nếu số hiện tại vẫn nhỏ hơn đích thì tiếp tục cộng
+                        if (count < target) {
+                            counter.innerText = count + increment;
+                            setTimeout(updateCount, 30); // 30ms gọi lại 1 lần tạo cảm giác chạy liên tục
+                        } else {
+                            counter.innerText = target; // Đảm bảo chốt đúng số đích khi kết thúc
+                        }
+                    };
+                    
+                    // Chỉ chạy hiệu ứng nếu số đích > 0
+                    if (+counter.getAttribute('data-target') > 0) {
+                        updateCount();
+                    }
+                });
+            };
+
+            // Dùng IntersectionObserver: Tính năng cực hay để biết khi nào người dùng cuộn tới
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    animateCounters(); // Bắt đầu đếm
+                    observer.disconnect(); // Hủy theo dõi (chỉ đếm 1 lần, cuộn lên cuộn xuống không bị đếm lại)
+                }
+            }, { threshold: 0.5 }); // threshold: 0.5 nghĩa là khu vực này hiện ra 50% màn hình thì mới bắt đầu đếm
+
+            const statsSection = document.getElementById('stats-section');
+            if (statsSection) {
+                observer.observe(statsSection);
+            }
         });
     </script>
 </body>

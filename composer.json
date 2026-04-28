@@ -10,7 +10,9 @@
         "endroid/qr-code": "^5.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
-        "simplesoftwareio/simple-qrcode": "^4.2"
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "web3p/ethereum-tx": "^0.4.3",
+        "web3p/web3.php": "^0.1.6"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

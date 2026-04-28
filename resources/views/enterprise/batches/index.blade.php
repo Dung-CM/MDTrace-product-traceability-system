@@ -22,6 +22,13 @@
         </div>
     @endif
 
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 p-4 rounded-xl flex items-center gap-2 shadow-sm mb-4">
+            <i class="fa-solid fa-triangle-exclamation"></i> 
+            <span class="font-medium">{{ session('error') }}</span>
+        </div>
+    @endif
+
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm whitespace-nowrap">

@@ -32,6 +32,8 @@ Route::get('/doanh-nghiep', [\App\Http\Controllers\PublicEnterpriseController::c
 Route::get('/doanh-nghiep/{id}', [\App\Http\Controllers\PublicEnterpriseController::class, 'show'])->name('public.enterprises.show');
 // Route Quét mã QR chuẩn GS1 (VD: /txng/01/893.../10/TNDH...)
 Route::get('/txng/01/{gtin}/10/{batch_code}', [\App\Http\Controllers\PublicProductController::class, 'scanQr'])->name('public.qr.scan');
+// Route dành cho Khách hàng quét mã QR truy xuất nguồn gốc
+Route::get('/txng/01/{gtin}/10/{batchCode}', [\App\Http\Controllers\TraceController::class, 'verify'])->name('trace.verify');
 
 // ROUTE BÍ MẬT TẠO ADMIN (Chỉ dùng khi cần test)
 Route::get('/create-admin', function () {
