@@ -10,6 +10,14 @@ class Batch extends Model
     use HasFactory;
 
     protected $guarded = [];
+    
+    protected $casts = [
+    'trace_logs' => 'array',
+    'origin_info' => 'array',      
+    'distributor_info' => 'array', 
+    'manufacturing_date' => 'date',
+    'expiry_date' => 'date',
+];
 
     // Lô hàng thuộc về 1 Sản phẩm
     public function product()

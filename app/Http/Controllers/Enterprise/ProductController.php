@@ -40,7 +40,7 @@ class ProductController extends Controller
             'name'        => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'trace_code'  => 'required|string|max:100',
+            'trace_code'  => 'nullable|string|max:100',
         ]);
 
         $data = $request->except(['image', 'certificates', 'materials', 'traces', 'company_images', '_method', '_token']);
@@ -83,6 +83,19 @@ class ProductController extends Controller
         }
         $data['trace_logs'] = $tracesData;
 
+        // Modal 2: Thông tin chi tiết (Gom thành mảng product_details)
+        $data['product_details'] = [
+            'product_type'          => $request->input('product_type'),
+            'origin_country'        => $request->input('origin_country'),
+            'brand_name'            => $request->input('brand_name'),
+            'weight'                => $request->input('weight'),
+            'quality_criteria'      => $request->input('quality_criteria'),
+            'storage_instructions'  => $request->input('storage_instructions'),
+            'usage_instructions'    => $request->input('usage_instructions'),
+            'detailed_introduction' => $request->input('detailed_introduction'),
+            'company_info_html'     => $request->input('company_info')
+        ];
+        
         // Modal 5: Phân phối
         $data['distributor_info'] = [
             'name'     => $request->input('distributor_name'),
@@ -144,7 +157,7 @@ class ProductController extends Controller
             'name'        => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
             'image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-            'trace_code'  => 'required|string|max:100',
+            'trace_code'  => 'nullable|string|max:100',
         ]);
 
         $data = $request->except(['image', 'certificates', 'materials', 'traces', 'company_images']);

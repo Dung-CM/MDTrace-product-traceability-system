@@ -20,8 +20,14 @@ use App\Http\Controllers\PublicProductController;
 // route công khai
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+Route::get('/gioi-thieu', function () {
+    return view('public.about');
+})->name('about');
+
 // Route hiển thị danh sách sản phẩm cho khách hàng
 Route::get('/san-pham', [PublicProductController::class, 'index'])->name('public.products.index');
+// Route xử lý Form tra cứu thủ công ngoài trang chủ
+Route::get('/tra-cuu', [\App\Http\Controllers\PublicProductController::class, 'search'])->name('public.search');
 // Route hiển thị chi tiết sản phẩm (Khi click vào hoặc Quét mã QR)
 Route::get('/san-pham/{id}', [PublicProductController::class, 'show'])->name('public.products.show');
 

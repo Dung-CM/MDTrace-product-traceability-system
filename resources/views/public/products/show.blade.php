@@ -3,15 +3,17 @@
 @section('title', $product->name)
 
 @php
-    // Giải mã dữ liệu JSON để sử dụng
-    $origin = $product->origin_info ?? [];
+    // BẺ LÁI: Ưu tiên lấy dữ liệu từ LÔ HÀNG ($batch). Nếu không có mới lùi về SẢN PHẨM ($product)
+    $origin = isset($batch) && !empty($batch->origin_info) ? $batch->origin_info : ($product->origin_info ?? []);
+    $dist = isset($batch) && !empty($batch->distributor_info) ? $batch->distributor_info : ($product->distributor_info ?? []);
+    $logs = isset($batch) && !empty($batch->trace_logs) ? $batch->trace_logs : ($product->trace_logs ?? []);
+    
+    // Tách mảng nguyên liệu
+    $materials = $origin['materials'] ?? [];
+    
     $details = $product->product_details ?? [];
     $comp = $product->company_info ?? [];
-    $dist = $product->distributor_info ?? [];
-    $logs = $product->trace_logs ?? [];
-    $materials = $origin['materials'] ?? [];
 
-    
     $profile = \App\Models\UserProfile::where('user_id', $product->user_id)->first();
     
     $cName = !empty($comp['company_name']) ? $comp['company_name'] : ($profile->company_name ?? $product->company_name);
@@ -110,17 +112,12 @@
                 </div>
             </div>
 
-            @if(isset($batch))
-                @php
-                    $transaction = \App\Models\BlockchainTransaction::where('batch_id', $batch->id)->first();
-                @endphp
-
-                @if($transaction)
+            @if(isset($verifyStatus))
+                @if($verifyStatus === 'success')
                     <div class="mt-5 p-4 border-2 border-emerald-500 rounded-2xl bg-emerald-50 relative overflow-hidden shadow-sm">
                         <div class="absolute -right-6 -top-6 opacity-10 rotate-12">
                             <i class="fa-solid fa-shield-check text-9xl text-emerald-600"></i>
                         </div>
-
                         <div class="flex items-center gap-3 relative z-10">
                             <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-emerald-200 shrink-0">
                                 <i class="fa-solid fa-link"></i>
@@ -130,9 +127,45 @@
                                 <p class="text-xs text-emerald-600 font-mono mt-0.5 truncate" title="{{ $transaction->transaction_hash }}">Hash: {{ $transaction->transaction_hash }}</p>
                             </div>
                         </div>
-                        
                         <div class="mt-3 pt-3 border-t border-emerald-200/60 text-[11px] text-emerald-700 leading-relaxed italic relative z-10">
-                            <i class="fa-solid fa-circle-check"></i> Dữ liệu lô hàng này đã được niêm phong bất biến tại mạng lưới MDTrace IPFS vào lúc {{ $transaction->created_at->format('H:i d/m/Y') }}.
+                            <i class="fa-solid fa-circle-check"></i> Dữ liệu lô hàng này đã được niêm phong bất biến tại mạng lưới MDTrace IPFS. Hoàn toàn nguyên vẹn!
+                        </div>
+                    </div>
+                    @elseif($verifyStatus === 'pending')
+                    <div class="mt-5 p-4 border-2 border-amber-500 rounded-2xl bg-amber-50 relative overflow-hidden shadow-sm">
+                        <div class="absolute -right-6 -top-6 opacity-10 rotate-12">
+                            <i class="fa-solid fa-hourglass-half text-9xl text-amber-600"></i>
+                        </div>
+                        <div class="flex items-center gap-3 relative z-10">
+                            <div class="w-12 h-12 bg-amber-500 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-amber-200 shrink-0">
+                                <i class="fa-solid fa-link-slash fa-fade"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-amber-800 uppercase text-sm tracking-wider">Đang chờ xác nhận</h4>
+                                <p class="text-xs text-amber-600 font-mono mt-0.5 truncate">Blockchain đang xử lý (10-15s)</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-amber-200/60 text-[11.5px] text-amber-800 leading-relaxed font-bold relative z-10">
+                            <i class="fa-solid fa-spinner fa-spin"></i> Dữ liệu đang được mạng lưới Sepolia đóng gói. Trạng thái mã băm đang trống. Bạn vui lòng đợi 15 giây rồi tải lại trang nhé!
+                        </div>
+                    </div>
+
+                @elseif($verifyStatus === 'tampered')
+                    <div class="mt-5 p-4 border-2 border-red-500 rounded-2xl bg-red-50 relative overflow-hidden shadow-lg animate-pulse">
+                        <div class="absolute -right-6 -top-6 opacity-10 rotate-12">
+                            <i class="fa-solid fa-triangle-exclamation text-9xl text-red-600"></i>
+                        </div>
+                        <div class="flex items-center gap-3 relative z-10">
+                            <div class="w-12 h-12 bg-red-500 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-red-200 shrink-0">
+                                <i class="fa-solid fa-xmark"></i>
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-bold text-red-800 uppercase text-sm tracking-wider">Cảnh báo: Dữ liệu bị thay đổi</h4>
+                                <p class="text-xs text-red-600 font-mono mt-0.5 truncate">Mã đối chiếu không khớp với Blockchain</p>
+                            </div>
+                        </div>
+                        <div class="mt-3 pt-3 border-t border-red-200/60 text-[11.5px] text-red-700 leading-relaxed relative z-10 font-bold">
+                            <i class="fa-solid fa-ban"></i> Nguy hiểm: Thông tin gốc của lô hàng này đã bị can thiệp và chỉnh sửa trái phép sau khi niêm phong lên Blockchain!
                         </div>
                     </div>
                 @endif
@@ -176,9 +209,9 @@
                             </div>
                             <p class="text-gray-600 text-sm mb-4">{{ $log['description'] ?? '' }}</p>
                             
-                            @if(!empty($log['image']))
+                            @if(!empty($log['image_url']))
                             <div class="mb-4">
-                               <img src="{{ getSecureImageUrl($log['image']) }}" onclick="viewImage(this.src)" class="rounded-xl w-full max-h-60 object-cover border border-gray-100 cursor-zoom-in hover:opacity-90 transition shadow-sm">
+                               <img src="{{ getSecureImageUrl($log['image_url']) }}" onclick="viewImage(this.src)" class="rounded-xl w-full max-h-60 object-cover border border-gray-100 cursor-zoom-in hover:opacity-90 transition shadow-sm">
                             </div>
                             @endif
 
@@ -278,19 +311,32 @@
                     </div>
                 </div>
 
+                <!-- TAB CHỨNG NHẬN -->
                 <div id="tab-cert" class="tab-content hidden grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @php $certs = $product->certificates ?? []; @endphp
-                    @forelse($certs as $cert)
-                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center">
-                       <img src="{{ getSecureImageUrl($cert) }}" class="w-full h-auto rounded-lg mb-3 shadow-sm hover:scale-[1.02] transition cursor-zoom-in" onclick="window.open(this.src)">
-                        <span class="text-xs font-bold text-gray-500 uppercase tracking-tighter">Văn bản kiểm định / Chứng nhận</span>
-                    </div>
-                    @empty
-                    <div class="col-span-full py-12 text-center text-gray-400">
-                        <i class="fa-solid fa-stamp text-5xl mb-3 opacity-20"></i>
-                        <p>Sản phẩm đang trong quá trình cập nhật hồ sơ chứng nhận.</p>
-                    </div>
-                    @endforelse
+                    @php 
+                        // 1. Ép kiểu và lấy chứng nhận của riêng sản phẩm
+                        $productCerts = is_string($product->certificates) ? json_decode($product->certificates, true) : ($product->certificates ?? []);
+                        
+                        // 2. Ép kiểu và lấy chứng nhận chung của Công ty (từ biến $profile đã gọi ở đầu trang)
+                        $companyCerts = isset($profile) && is_string($profile->company_certificates) ? json_decode($profile->company_certificates, true) : ($profile->company_certificates ?? []);
+                        
+                        // 3. LOGIC BẺ LÁI (FALLBACK): Ưu tiên SP, nếu SP rỗng thì lấy của Công ty
+                        $certs = !empty($productCerts) ? $productCerts : $companyCerts;
+                    @endphp
+
+                    @if(is_array($certs) && count($certs) > 0)
+                        @foreach($certs as $cert)
+                        <div class="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex flex-col items-center">
+                            <img src="{{ getSecureImageUrl($cert) }}" class="w-full h-auto rounded-lg mb-3 shadow-sm hover:scale-[1.02] transition cursor-zoom-in" onclick="window.open(this.src)">
+                            <span class="text-xs font-bold text-gray-500 uppercase tracking-tighter">Văn bản kiểm định / Chứng nhận</span>
+                        </div>
+                        @endforeach
+                    @else
+                        <div class="col-span-full py-12 text-center text-gray-400">
+                            <i class="fa-solid fa-stamp text-5xl mb-3 opacity-20"></i>
+                            <p>Sản phẩm và Doanh nghiệp đang trong quá trình cập nhật hồ sơ chứng nhận.</p>
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>

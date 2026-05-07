@@ -11,6 +11,8 @@
         </a> </div>
 
         <nav class="hidden md:flex gap-8 text-sm font-medium">
+            <a href="{{ route('about') }}" class="text-white hover:text-emerald-400 font-medium transition">Giới thiệu</a>
+            <a href="#trace-search" class="hover:text-accent transition ">Tra cứu</a>
             <a href="#how-it-works" class="hover:text-accent transition">Quy trình</a>
             <a href="#benefits" class="hover:text-accent transition">Lợi ích</a>
              <a href="#testimonials" class="hover:text-accent transition">Đánh giá</a>
@@ -63,7 +65,9 @@
          x-cloak style="display: none;">
         
         <div class="flex flex-col px-6 pt-4 space-y-4">
+            <a href="{{ route('about') }}" class="text-white hover:text-emerald-400 font-medium transition">Giới thiệu</a>
             <a href="#how-it-works" @click="mobileMenuOpen = false" class="text-white hover:text-accent font-medium">Quy trình</a>
+            <a href="#trace-search" @click="mobileMenuOpen = false" class="text-white hover:text-accent font-medium">Tra cứu</a>
             <a href="#benefits" @click="mobileMenuOpen = false" class="text-white hover:text-accent font-medium">Lợi ích</a>
             <a href="#testimonials" @click="mobileMenuOpen = false" class="text-white hover:text-accent font-medium">Đánh giá</a>
             <a href="{{ route('public.products.index') }}" class="text-accent font-bold">Sản Phẩm</a>

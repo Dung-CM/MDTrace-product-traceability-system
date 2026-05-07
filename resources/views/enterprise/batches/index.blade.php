@@ -62,6 +62,7 @@
                                 <a href="{{ route('enterprise.batches.download_qr', $batch->id) }}" class="text-[10px] bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-2 py-1 rounded font-bold transition">
                                     <i class="fa-solid fa-download"></i> Tải QR
                                 </a>
+                                
                             </div>
                             @endif
                         </td>
@@ -155,7 +156,9 @@
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </form>
-                                
+                                <a href="{{ route('enterprise.batches.edit', $batch->id) }}" class="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition shadow-sm" title="Chỉnh sửa Lô hàng">
+                                    <i class="fa-solid fa-pen-to-square"></i>
+                                </a>
                             </div>
                         </td>
                     </tr> 

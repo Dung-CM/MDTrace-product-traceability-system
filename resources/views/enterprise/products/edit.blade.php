@@ -4,17 +4,19 @@
 
 @php
     // Trích xuất dữ liệu JSON từ Database ra để gắn vào Form cho gọn code
-    $origin = $product->origin_info ?? [];
+   
     $details = $product->product_details ?? [];
     $comp = $product->company_info ?? [];
-    $dist = $product->distributor_info ?? [];
+    // $dist = $product->distributor_info ?? [];
+   // $origin = $product->origin_info ?? [];
     
     // Nếu chưa có mảng nào thì gán mặc định 1 phần tử trống để giao diện không bị lỗi
     $materials = !empty($origin['materials']) ? $origin['materials'] : [[]];
     $traces = !empty($product->trace_logs) ? $product->trace_logs : [[]];
 @endphp
-
+ 
 @section('content')
+
 <div class="max-w-5xl mx-auto">
     
     <div class="mb-6 flex justify-between items-center">
@@ -35,7 +37,7 @@
             @csrf
             @method('PUT')
             
-            <input type="hidden" name="trace_code" value="{{ $product->trace_code }}">
+            <input type="hidden" name="trace_code" value="{{ $product->trace_code }}" readonly>
             
             @if ($errors->any())
                 <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-xl shadow-sm">
@@ -107,20 +109,8 @@
                 <!-- // đã xóa thẻ div của nhập liệu truy xuất hệ thống  -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Ngày sản xuất</label>
-                        <input type="date" name="mfg_date" value="{{ old('mfg_date', $product->mfg_date) }}" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Hạn sử dụng</label>
-                        <input type="date" name="exp_date" value="{{ old('exp_date', $product->exp_date) }}" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                    </div>
-                    <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Mã GTIN</label>
                         <input type="text" name="gtin_code" value="{{ old('gtin_code', $product->gtin_code) }}" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition font-mono">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Số lô</label>
-                        <input type="text" name="batch_code" value="{{ old('batch_code', $product->batch_code) }}" class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
                     </div>
                 </div>
             </div>
@@ -139,12 +129,12 @@
             <div class="mb-4">
                 <h3 class="text-lg font-bold text-blue-700 border-b-2 border-blue-100 pb-2 mb-4">4. Nội Dung Mở Rộng Chi Tiết</h3>
                 <p class="text-sm text-gray-500 mb-4">Nhấn vào từng mục để sửa thông tin chi tiết.</p>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                    <button type="button" onclick="openModal('modal-nguongoc')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-emerald-100 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition group"><i class="fa-solid fa-leaf text-2xl text-emerald-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Nguồn gốc</span></button>
+                <div class="grid grid-cols-2 gap-4 max-w-2xl">
+                    <!-- <button type="button" onclick="openModal('modal-nguongoc')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-emerald-100 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition group"><i class="fa-solid fa-leaf text-2xl text-emerald-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Nguồn gốc</span></button> -->
                     <button type="button" onclick="openModal('modal-sanpham')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-blue-100 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition group"><i class="fa-solid fa-box-open text-2xl text-blue-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Thông tin Sản Phẩm </span></button>
                     <button type="button" onclick="openModal('modal-congty')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-orange-100 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition group"><i class="fa-solid fa-building text-2xl text-orange-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Thông tin Công Ty</span></button>
-                    <button type="button" onclick="openModal('modal-truyxuat')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-purple-100 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition group"><i class="fa-solid fa-route text-2xl text-purple-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Nhật ký Sản Xuất</span></button>
-                    <button type="button" onclick="openModal('modal-phanphoi')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-teal-100 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition group"><i class="fa-solid fa-truck-fast text-2xl text-teal-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center"> Đơn vị Phân phối</span></button>
+                    <!-- <button type="button" onclick="openModal('modal-truyxuat')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-purple-100 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition group"><i class="fa-solid fa-route text-2xl text-purple-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center">Nhật ký Sản Xuất</span></button>
+                    <button type="button" onclick="openModal('modal-phanphoi')" class="flex flex-col items-center justify-center p-4 bg-white border-2 border-teal-100 rounded-xl hover:border-teal-500 hover:bg-teal-50 transition group"><i class="fa-solid fa-truck-fast text-2xl text-teal-600 mb-2 group-hover:scale-110 transition"></i><span class="text-sm font-semibold text-gray-700 text-center"> Đơn vị Phân phối</span></button> -->
                 </div>
             </div>
 
@@ -154,164 +144,72 @@
                     <i class="fa-solid fa-save"></i> Cập Nhật Sản Phẩm
                 </button>
             </div>
-        </form>
-    </div>
-</div>
-
-<!--Modal 1: Nguồn gốc nguyên liệu-->
-<div id="modal-nguongoc" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
-    <div class="bg-white rounded-2xl w-full max-w-5xl mx-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div class=" px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-emerald-50">
-            <h4 class="text-lg font-bold text-emerald-800">
-                <i class="fa-solid fa-leaf mr-2"></i>Nhập Thông Tin Nguồn Gốc Nguyên Liệu
-            </h4>
-            <button type="button" onclick="closeModal('modal-nguongoc')" class="text-gray-400 hover:text-gray-600 transition">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6 overflow-y-auto">
-        <div class="mb-8">
-            <h5 class="text-md font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Thông tin Nhà cung cấp</h5>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Tên nhà cung cấp <span class="text-red-500">*</span></label>
-                    <input type="text" name="supplier_name" form="main-form" value="{{ $origin['supplier_name'] ?? '' }}" placeholder="VD: Nông dân tại Tịnh Biên" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Địa chỉ <span class="text-red-500">*</span></label>
-                    <input type="text" name="supplier_address" form="main-form" value="{{ $origin['supplier_address'] ?? '' }}" placeholder="VD: Ấp Tây Hưng, Xã Tân An, An Giang" class="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition">
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <div class="flex justify-between items-center border-b border-gray-200 pb-2 mb-4">
-                <h5 class="text-md font-bold text-gray-800">Chi tiết nguyên liệu</h5>
-                <button type="button" onclick="addMaterialRow()" class="text-sm text-emerald-600 hover:text-emerald-700 font-semibold bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 transition">
-                    <i class="fa-solid fa-plus mr-1"></i>Thêm dòng
-                </button>
-            </div>
-            
-            <div class="overflow-x-auto rounded-xl border border-gray-200">
-                <table class="w-full text-left text-sm text-gray-600 whitespace-nowrap">
-                    <thead class="bg-gray-50 text-gray-700 font-semibold border-b border-gray-200">
-                        <tr>
-                            <th class="px-4 py-3">Tên nguyên liệu</th>
-                            <th class="px-4 py-3">Mã lô</th>
-                            <th class="px-4 py-3">Ngày sản xuất</th>
-                            <th class="px-4 py-3">Hạn sử dụng</th>
-                            <th class="px-4 py-3">Hình ảnh</th>
-                            <th class="px-4 py-3 text-center w-12">Xóa</th>
-                        </tr>
-                    </thead>
-                    <tbody id="material-list">
-                        @foreach($materials as $index => $mat)
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition">
-                            <td class="px-4 py-3">
-                                <input type="text" name="materials[{{ $index }}][name]" form="main-form" value="{{ $mat['name'] ?? '' }}" placeholder="Nước Thốt nốt tươi" class="w-full min-w-[150px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm">
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="text" name="materials[{{ $index }}][batch]" form="main-form" value="{{ $mat['batch'] ?? '' }}" placeholder="Mã lô..." class="w-full min-w-[100px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm">
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="date" name="materials[{{ $index }}][mfg]" form="main-form" value="{{ $mat['mfg'] ?? '' }}" class="w-full min-w-[130px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm">
-                            </td>
-                            <td class="px-4 py-3">
-                                <input type="date" name="materials[{{ $index }}][exp]" form="main-form" value="{{ $mat['exp'] ?? '' }}" class="w-full min-w-[130px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm">
-                            </td>
-                            <td class="px-4 py-3">
-                                @if(!empty($mat['image']))
-                                    <img src="{{ asset('storage/' . $mat['image']) }}" class="w-10 h-10 object-cover rounded mb-1">
-                                @endif
-                                <input type="file" name="materials[{{ $index }}][image]" form="main-form" accept="image/*" class="w-full min-w-[180px] text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer">
-                            </td>
-                            <td class="px-4 py-3 text-center">
-                                <button type="button" onclick="this.closest('tr').remove()" class="text-gray-400 hover:text-red-500 transition" title="Xóa dòng này">
-                                    <i class="fa-solid fa-trash-can"></i>
-                                </button>
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <p class="text-xs text-gray-400 mt-2 italic">* Chọn "Thêm dòng" nếu sản phẩm được cấu thành từ nhiều nguyên liệu khác nhau.</p>
-        </div>
-    </div>
-    
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-        <button type="button" onclick="closeModal('modal-nguongoc')" class="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition">Thu nhỏ</button>
-        <button type="button" onclick="closeModal('modal-nguongoc')" class="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 shadow-sm flex items-center gap-2 transition">
-            <i class="fa-solid fa-check"></i> Hoàn tất nhập
-        </button>
-        </div>
     </div>
 </div>
 <!--Modal 2: Thông tin sản phẩm-->
 <div id="modal-sanpham" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
-    <div class="bg-white rounded-2xl w-full max-w-4xl mx-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-blue-50">
-            <h4 class="text-lg font-bold text-blue-800">
-                <i class="fa-solid fa-box-open mr-2"></i>Nhập Thông Tin Chi Tiết Sản Phẩm
-            </h4>
-            <button type="button" onclick="closeModal('modal-sanpham')" class="text-gray-400 hover:text-gray-600 transition">
-                <i class="fa-solid fa-xmark text-xl"></i>
-            </button>
-        </div>
-        
-        <div class="p-6 overflow-y-auto">
-        <div class="mb-6">
-            <h5 class="text-md font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Các thuộc tính cơ bản</h5>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-2xl w-full max-w-4xl mx-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-blue-50">
+                <h4 class="text-lg font-bold text-blue-800">
+                    <i class="fa-solid fa-box-open mr-2"></i>Nhập Thông Tin Chi Tiết Sản Phẩm
+                </h4>
+                <button type="button" onclick="closeModal('modal-sanpham')" class="text-gray-400 hover:text-gray-600 transition">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto">
+                <div class="mb-6">
+                    <h5 class="text-md font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Các thuộc tính cơ bản</h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Loại sản phẩm</label>
+                            <input type="text" name="product_type" form="main-form" value="{{ $details['product_type'] ?? '' }}" placeholder="VD: Đường Thốt Nốt" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Xuất xứ</label>
+                            <input type="text" name="origin_country" form="main-form" value="{{ $details['origin_country'] ?? '' }}" placeholder="VD: Việt Nam" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Thương hiệu</label>
+                            <input type="text" name="brand_name" form="main-form" value="{{ $details['brand_name'] ?? '' }}" placeholder="VD: Ngọc Trang" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Trọng lượng / Thể tích</label>
+                            <input type="text" name="weight" form="main-form" value="{{ $details['weight'] ?? '' }}" placeholder="VD: 500g" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Chỉ tiêu chất lượng</label>
+                            <input type="text" name="quality_criteria" form="main-form" value="{{ $details['quality_criteria'] ?? '' }}" placeholder="VD: Không sử dụng đường hóa học" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Hướng dẫn bảo quản</label>
+                            <input type="text" name="storage_instructions" form="main-form" value="{{ $details['storage_instructions'] ?? '' }}" placeholder="VD: Bảo quản nơi khô ráo thoáng mát" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Cách dùng</label>
+                            <textarea name="usage_instructions" form="main-form" rows="2" placeholder="VD: Nấu các loại chè, làm bánh ngọt..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">{{ $details['usage_instructions'] ?? '' }}</textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Loại sản phẩm</label>
-                    <input type="text" name="product_type" form="main-form" value="{{ $details['product_type'] ?? '' }}" placeholder="VD: Đường Thốt Nốt" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Xuất xứ</label>
-                    <input type="text" name="origin_country" form="main-form" value="{{ $details['origin_country'] ?? '' }}" placeholder="VD: Việt Nam" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Thương hiệu</label>
-                    <input type="text" name="brand_name" form="main-form" value="{{ $details['brand_name'] ?? '' }}" placeholder="VD: Ngọc Trang" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Trọng lượng / Thể tích</label>
-                    <input type="text" name="weight" form="main-form" value="{{ $details['weight'] ?? '' }}" placeholder="VD: 500g" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Chỉ tiêu chất lượng</label>
-                    <input type="text" name="quality_criteria" form="main-form" value="{{ $details['quality_criteria'] ?? '' }}" placeholder="VD: Không sử dụng đường hóa học" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Hướng dẫn bảo quản</label>
-                    <input type="text" name="storage_instructions" form="main-form" value="{{ $details['storage_instructions'] ?? '' }}" placeholder="VD: Bảo quản nơi khô ráo thoáng mát" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">
-                </div>
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Cách dùng</label>
-                    <textarea name="usage_instructions" form="main-form" rows="2" placeholder="VD: Nấu các loại chè, làm bánh ngọt..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 transition">{{ $details['usage_instructions'] ?? '' }}</textarea>
+                    <h5 class="text-md font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Bài viết giới thiệu chi tiết</h5>
+                    <p class="text-xs text-gray-500 mb-2">Nhập nội dung bài viết giới thiệu về nguyên liệu, công dụng, đặc điểm của sản phẩm.</p>
+                    <textarea name="detailed_introduction" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition">{{ $details['detailed_introduction'] ?? '' }}</textarea>
+                    
+                    <textarea name="company_info" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition mt-4">{{ $details['company_info_html'] ?? '' }}</textarea>
                 </div>
             </div>
-        </div>
-
-        <div>
-            <h5 class="text-md font-bold text-gray-800 border-b border-gray-200 pb-2 mb-4">Bài viết giới thiệu chi tiết</h5>
-            <p class="text-xs text-gray-500 mb-2">Nhập nội dung bài viết giới thiệu về nguyên liệu, công dụng, đặc điểm của sản phẩm.</p>
-            <textarea name="detailed_introduction" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition">{{ $details['detailed_introduction'] ?? '' }}</textarea>
             
-            <textarea name="company_info" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition mt-4">{{ $details['company_info_html'] ?? '' }}</textarea>
+            <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+                <button type="button" onclick="closeModal('modal-sanpham')" class="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition">Thu nhỏ</button>
+                <button type="button" onclick="closeModal('modal-sanpham')" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 shadow-sm flex items-center gap-2 transition">
+                    <i class="fa-solid fa-check"></i> Hoàn tất nhập
+                </button>
+            </div>
         </div>
     </div>
-    
-    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-        <button type="button" onclick="closeModal('modal-sanpham')" class="px-6 py-2.5 border border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-100 transition">Thu nhỏ</button>
-        <button type="button" onclick="closeModal('modal-sanpham')" class="px-6 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 shadow-sm flex items-center gap-2 transition">
-            <i class="fa-solid fa-check"></i> Hoàn tất nhập
-        </button>
-     </div>
-    </div>
-</div>
 
 <!--Modal 3: Thông tin công ty-->
 <div id="modal-congty" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
@@ -416,7 +314,7 @@
         </div>
     </div>
 </div>
- <!--Modal 4 nhật ký truy xuất nguồn gốc-->
+ <!-- Modal 4 nhật ký truy xuất nguồn gốc
 <div id="modal-truyxuat" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
     <div class="bg-white rounded-2xl w-full max-w-5xl mx-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-purple-50">
@@ -529,9 +427,9 @@
          </div>
         </div>
     </div>
-</div>
+</div> -->
 <!--Modal 5 thông tin phân phối-->
-<div id="modal-phanphoi" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
+<!-- <div id="modal-phanphoi" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center backdrop-blur-sm transition-opacity">
     <div class="bg-white rounded-2xl w-full max-w-3xl mx-4 shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
         <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-teal-50">
             <h4 class="text-lg font-bold text-teal-800">
@@ -585,133 +483,134 @@
         </button>
         </div>
     </div>
-</div>
-
+</div> -->
+</form>
 <script>
     // JS MODAL
     function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
     function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
 
     // Xử lý index cho việc thêm dòng (Lấy số lượng hiện tại từ database)
-    let materialIndex = {{ count($materials) }};
-    function addMaterialRow() {
-        const tbody = document.getElementById('material-list');
-        tbody.insertAdjacentHTML('beforeend', `
-            <tr class="border-b border-gray-100 hover:bg-gray-50">
-                <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][name]" form="main-form" class="w-full min-w-[150px] px-3 py-2 border rounded-lg"></td>
-                <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][batch]" form="main-form" class="w-full min-w-[100px] px-3 py-2 border rounded-lg"></td>
-                <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][mfg]" form="main-form" class="w-full min-w-[130px] px-3 py-2 border rounded-lg"></td>
-                <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][exp]" form="main-form" class="w-full min-w-[130px] px-3 py-2 border rounded-lg"></td>
-                <td class="px-4 py-3"><input type="file" name="materials[${materialIndex}][image]" form="main-form" class="text-xs"></td>
-                <td class="px-4 py-3 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button></td>
-            </tr>
-        `);
-        materialIndex++;
-    }
+    // let materialIndex = {{ count($materials) }};
+    // function addMaterialRow() {
+    //     const tbody = document.getElementById('material-list');
+    //     tbody.insertAdjacentHTML('beforeend', `
+    //         <tr class="border-b border-gray-100 hover:bg-gray-50">
+    //             <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][name]" form="main-form" class="w-full min-w-[150px] px-3 py-2 border rounded-lg"></td>
+    //             <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][batch]" form="main-form" class="w-full min-w-[100px] px-3 py-2 border rounded-lg"></td>
+    //             <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][mfg]" form="main-form" class="w-full min-w-[130px] px-3 py-2 border rounded-lg"></td>
+    //             <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][exp]" form="main-form" class="w-full min-w-[130px] px-3 py-2 border rounded-lg"></td>
+    //             <td class="px-4 py-3"><input type="file" name="materials[${materialIndex}][image]" form="main-form" class="text-xs"></td>
+    //             <td class="px-4 py-3 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash-can"></i></button></td>
+    //         </tr>
+    //     `);
+    //     materialIndex++;
+    // }
 
-      let traceIndex = {{ count($traces) }};
-    function addTraceStage() {
-        const container = document.getElementById('trace-stages-container');
-        container.insertAdjacentHTML('beforeend', `
-            <div class="relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm trace-card">
-                <div class="absolute top-4 right-4">
-                    <button type="button" onclick="removeTraceStage(this)" class="text-gray-400 hover:text-red-500 transition bg-red-50 hover:bg-red-100 p-2 rounded-lg" title="Xóa công đoạn này"><i class="fa-solid fa-trash-can"></i></button>
-                </div>
-                <h5 class="text-md font-bold text-purple-700 mb-4 flex items-center border-b border-gray-100 pb-2">
-                    <span class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 trace-number"></span>
-                    Thông tin công đoạn
-                </h5>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Tên công đoạn <span class="text-red-500">*</span></label>
-                        <input type="text" name="traces[${traceIndex}][name]" form="main-form" required class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition font-bold text-purple-800 uppercase">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian bắt đầu</label>
-                        <input type="datetime-local" name="traces[${traceIndex}][start_time]" form="main-form" class="trace-start-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition" onchange="updateTraceStats()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian kết thúc</label>
-                        <input type="datetime-local" name="traces[${traceIndex}][end_time]" form="main-form" class="trace-end-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition" onchange="updateTraceStats()">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Sản phẩm tham chiếu</label>
-                        <input type="text" name="traces[${traceIndex}][product_ref]" form="main-form" placeholder="VD: Gói bắp cải 500g" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Đối tượng thực hiện</label>
-                        <input type="text" name="traces[${traceIndex}][person]" form="main-form" placeholder="VD: Trần Quốc Cường" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Đơn vị thực hiện</label>
-                        <input type="text" name="traces[${traceIndex}][unit]" form="main-form" placeholder="VD: Công ty TNHH MTV Bảo Toàn" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Địa điểm</label>
-                        <input type="text" name="traces[${traceIndex}][location]" form="main-form" placeholder="VD: 316 Hoàng Diệu..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Mô tả ngắn</label>
-                        <textarea name="traces[${traceIndex}][description]" form="main-form" rows="2" placeholder="Nhập tóm tắt công việc đã thực hiện..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></textarea>
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Ảnh minh chứng</label>
-                        <input type="file" name="traces[${traceIndex}][image]" form="main-form" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-xl cursor-pointer">
-                    </div>
-                </div>
-            </div>
-        `);
-        traceIndex++;
-        updateTraceNumbers();
-        updateTraceStats(); // Tự động cập nhật thống kê khi thêm thẻ
-    }
-    function updateTraceStats() {
-    // 1. Cập nhật Tổng số công việc
-    const stages = document.querySelectorAll('.trace-card');
-    document.getElementById('stat-total-tasks').innerText = stages.length;
+    //   let traceIndex = {{ count($traces) }};
+    // function addTraceStage() {
+    //     const container = document.getElementById('trace-stages-container');
+    //     container.insertAdjacentHTML('beforeend', `
+    //         <div class="relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm trace-card">
+    //             <div class="absolute top-4 right-4">
+    //                 <button type="button" onclick="removeTraceStage(this)" class="text-gray-400 hover:text-red-500 transition bg-red-50 hover:bg-red-100 p-2 rounded-lg" title="Xóa công đoạn này"><i class="fa-solid fa-trash-can"></i></button>
+    //             </div>
+    //             <h5 class="text-md font-bold text-purple-700 mb-4 flex items-center border-b border-gray-100 pb-2">
+    //                 <span class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 trace-number"></span>
+    //                 Thông tin công đoạn
+    //             </h5>
+    //             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    //                 <div class="md:col-span-2">
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Tên công đoạn <span class="text-red-500">*</span></label>
+    //                     <input type="text" name="traces[${traceIndex}][name]" form="main-form" required class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition font-bold text-purple-800 uppercase">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian bắt đầu</label>
+    //                     <input type="datetime-local" name="traces[${traceIndex}][start_time]" form="main-form" class="trace-start-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition" onchange="updateTraceStats()">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian kết thúc</label>
+    //                     <input type="datetime-local" name="traces[${traceIndex}][end_time]" form="main-form" class="trace-end-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition" onchange="updateTraceStats()">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Sản phẩm tham chiếu</label>
+    //                     <input type="text" name="traces[${traceIndex}][product_ref]" form="main-form" placeholder="VD: Gói bắp cải 500g" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Đối tượng thực hiện</label>
+    //                     <input type="text" name="traces[${traceIndex}][person]" form="main-form" placeholder="VD: Trần Quốc Cường" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Đơn vị thực hiện</label>
+    //                     <input type="text" name="traces[${traceIndex}][unit]" form="main-form" placeholder="VD: Công ty TNHH MTV Bảo Toàn" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
+    //                 </div>
+    //                 <div>
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Địa điểm</label>
+    //                     <input type="text" name="traces[${traceIndex}][location]" form="main-form" placeholder="VD: 316 Hoàng Diệu..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">
+    //                 </div>
+    //                 <div class="md:col-span-2">
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Mô tả ngắn</label>
+    //                     <textarea name="traces[${traceIndex}][description]" form="main-form" rows="2" placeholder="Nhập tóm tắt công việc đã thực hiện..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></textarea>
+    //                 </div>
+    //                 <div class="md:col-span-2">
+    //                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ảnh minh chứng</label>
+    //                     <input type="file" name="traces[${traceIndex}][image]" form="main-form" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-xl cursor-pointer">
+    //                 </div>
+    //             </div>
+    //         </div>
+    //     `);
+    //     traceIndex++;
+    //     updateTraceNumbers();
+    //     updateTraceStats(); // Tự động cập nhật thống kê khi thêm thẻ
+    // }
 
-    // 2. Xử lý thời gian
-    const startInputs = document.querySelectorAll('.trace-start-input');
-    const endInputs = document.querySelectorAll('.trace-end-input');
+    // function updateTraceStats() {
+    // // 1. Cập nhật Tổng số công việc
+    // const stages = document.querySelectorAll('.trace-card');
+    // document.getElementById('stat-total-tasks').innerText = stages.length;
 
-    let startTimeValue = "Chưa xác định";
-    let endTimeValue = "Chưa xác định";
+    // // 2. Xử lý thời gian
+    // const startInputs = document.querySelectorAll('.trace-start-input');
+    // const endInputs = document.querySelectorAll('.trace-end-input');
 
-    // Lấy thời gian bắt đầu của giai đoạn ĐẦU TIÊN (Index 0)
-    if (startInputs.length > 0 && startInputs[0].value) {
-        startTimeValue = formatDateTimeVietnamese(startInputs[0].value);
-    }
+    // let startTimeValue = "Chưa xác định";
+    // let endTimeValue = "Chưa xác định";
 
-    // Lấy thời gian kết thúc của giai đoạn CUỐI CÙNG (Index n-1)
-    if (endInputs.length > 0 && endInputs[endInputs.length - 1].value) {
-        endTimeValue = formatDateTimeVietnamese(endInputs[endInputs.length - 1].value);
-    }
+    // // Lấy thời gian bắt đầu của giai đoạn ĐẦU TIÊN (Index 0)
+    // if (startInputs.length > 0 && startInputs[0].value) {
+    //     startTimeValue = formatDateTimeVietnamese(startInputs[0].value);
+    // }
 
-    // Hiển thị ra giao diện
-    document.getElementById('stat-start-time').innerText = startTimeValue;
-    document.getElementById('stat-end-time').innerText = endTimeValue;
-}
+    // // Lấy thời gian kết thúc của giai đoạn CUỐI CÙNG (Index n-1)
+    // if (endInputs.length > 0 && endInputs[endInputs.length - 1].value) {
+    //     endTimeValue = formatDateTimeVietnamese(endInputs[endInputs.length - 1].value);
+    // }
 
-// Hàm bổ trợ để định dạng ngày tháng cho đẹp (VD: 10:30 08/04/2026)
-function formatDateTimeVietnamese(dateTimeStr) {
-    if (!dateTimeStr) return "Chưa xác định";
-    const d = new Date(dateTimeStr);
-    const date = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear();
-    const time = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
-    return `${time} ${date}`;
-}
-    function removeTraceStage(btn) { 
-        btn.closest('.trace-card').remove(); 
-        updateTraceNumbers(); 
-        updateTraceStats(); 
-    }
-    function updateTraceNumbers() {
-        document.querySelectorAll('.trace-card').forEach((card, idx) => {
-            let numSpan = card.querySelector('.trace-number');
-            if(numSpan) numSpan.innerText = idx + 1;
-        });
+    // // Hiển thị ra giao diện
+    // document.getElementById('stat-start-time').innerText = startTimeValue;
+    // document.getElementById('stat-end-time').innerText = endTimeValue;
+    // }
+
+// // Hàm bổ trợ để định dạng ngày tháng cho đẹp (VD: 10:30 08/04/2026)
+// function formatDateTimeVietnamese(dateTimeStr) {
+//     if (!dateTimeStr) return "Chưa xác định";
+//     const d = new Date(dateTimeStr);
+//     const date = ("0" + d.getDate()).slice(-2) + "/" + ("0" + (d.getMonth() + 1)).slice(-2) + "/" + d.getFullYear();
+//     const time = ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+//     return `${time} ${date}`;
+// }
+//     function removeTraceStage(btn) { 
+//         btn.closest('.trace-card').remove(); 
+//         updateTraceNumbers(); 
+//         updateTraceStats(); 
+//     }
+//     function updateTraceNumbers() {
+//         document.querySelectorAll('.trace-card').forEach((card, idx) => {
+//             let numSpan = card.querySelector('.trace-number');
+//             if(numSpan) numSpan.innerText = idx + 1;
+//         });
         
-    }
+//     }
 
     // Xem trước ảnh chính
     function previewMainImage(input) {
@@ -746,7 +645,7 @@ function initCKEditor() {
     // Khởi tạo CKEditor
     document.addEventListener('DOMContentLoaded', () => {
         // Chạy thống kê ngay lập tức khi mở trang
-     updateTraceStats();
+    //  updateTraceStats();
         initCKEditor();
     });
 </script>

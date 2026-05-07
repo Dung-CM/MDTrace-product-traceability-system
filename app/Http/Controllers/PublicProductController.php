@@ -46,8 +46,35 @@ class PublicProductController extends Controller
         $product = Product::with('category')->findOrFail($id);
         return view('public.products.show', compact('product'));
     }
-    // Hàm xử lý khi khách hàng Quét Mã QR
-   public function scanQr(Request $request, $gtin, $batch_code)
+
+    public function search(Request $request)
+    {
+        $code = trim($request->input('code'));
+
+        if (empty($code)) {
+            // Trả về JSON nếu là gọi ngầm (AJAX), ngược lại trả về web bình thường
+            if ($request->ajax()) { return response()->json(['success' => false, 'message' => 'Vui lòng nhập mã lô hàng cần truy xuất!']); }
+            return redirect()->route('home')->with('error', 'Vui lòng nhập mã lô hàng cần truy xuất!');
+        }
+
+        $batch = \App\Models\Batch::with('product')->where('batch_code', $code)->first();
+
+        if ($batch && $batch->product) {
+            $gtin = $batch->product->gtin_code ?? '0000000000000';
+            $batchCode = $batch->batch_code;
+            $url = route('trace.verify', ['gtin' => $gtin, 'batchCode' => $batchCode]);
+            
+            // Nếu tìm thấy: Trả về link để Javascript tự động chuyển trang
+            if ($request->ajax()) { return response()->json(['success' => true, 'redirect' => $url]); }
+            return redirect($url);
+        }
+
+        // Nếu không tìm thấy
+        if ($request->ajax()) { return response()->json(['success' => false, 'message' => 'Mã lô hàng không hợp lệ hoặc không tồn tại!']); }
+        return redirect()->route('home')->with('error', 'Mã lô hàng không hợp lệ hoặc không tồn tại!');
+    }
+ // Hàm xử lý khi khách hàng Quét Mã QR
+    public function scanQr(Request $request, $gtin, $batch_code)
     {
         // 1. Tìm Sản phẩm
         $product = Product::with('category')->where('gtin_code', $gtin)->firstOrFail();
@@ -57,19 +84,68 @@ class PublicProductController extends Controller
                                   ->where('batch_code', $batch_code)
                                   ->firstOrFail();
 
-        // 3. LOGIC MỚI: BẮT DỮ LIỆU QUÉT MÃ (IP & THIẾT BỊ)
-        // Lấy danh sách IP từ Ngrok truyền vào
+        // 3. LOGIC MỚI: BẮT DỮ LIỆU QUÉT MÃ
         $forwardedIp = $request->header('x-forwarded-for'); 
-        // Nếu có nhiều IP (do qua nhiều trạm), lấy cái đầu tiên. Nếu không có Ngrok thì lấy IP gốc.
         $realIp = $forwardedIp ? explode(',', $forwardedIp)[0] : $request->ip();
 
-       ScanHistory::create([
+        ScanHistory::create([
             'batch_id'    => $batch->id,
-            'ip_address'  => trim($realIp), // Lưu IP Thật vào Database
+            'ip_address'  => trim($realIp),
             'device_info' => $request->header('User-Agent'),
             'scanned_at'  => now(),
         ]);
 
-        return view('public.products.show', compact('product', 'batch'));
+        // ==========================================
+        // 4. KIỂM TRA ĐỐI CHIẾU BLOCKCHAIN (REAL VERIFY)
+        // ==========================================
+        $transaction = \App\Models\BlockchainTransaction::where('batch_id', $batch->id)->first();
+        $verifyStatus = 'none'; 
+        
+        $mysqlHash = '';
+        $blockchainHash = '';
+
+        if ($transaction) {
+            // A. Tính lại mã băm của dữ liệu HIỆN TẠI trong database
+            $payload = [
+                'batch_code' => trim($batch->batch_code),
+                'product_name' => trim($product->name),
+                'mfg' => \Carbon\Carbon::parse($batch->manufacturing_date)->format('Y-m-d'),
+                'exp' => \Carbon\Carbon::parse($batch->expiry_date)->format('Y-m-d'),
+            ];
+            $mysqlHash = '0x' . hash('sha256', json_encode($payload, JSON_UNESCAPED_UNICODE));
+            
+            // B. Kéo mã băm GỐC đã niêm phong trên Smart Contract về
+            try {
+                $client = new \GuzzleHttp\Client(['verify' => false]);
+                $requestManager = new \Web3\RequestManagers\HttpRequestManager(env('BLOCKCHAIN_RPC_URL'), 10, $client);
+                $web3 = new \Web3\Web3(new \Web3\Providers\HttpProvider($requestManager));
+
+                // ĐÃ FIX LẠI ABI CHUẨN ĐỂ ĐỌC HASH
+              // BẢN DỊCH ABI CHUẨN 100% THEO SMART CONTRACT CỦA CHỊ
+                $contractAbi = '[{"inputs":[{"internalType":"string","name":"_batchCode","type":"string"}],"name":"verifyBatch","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]';
+                $contract = new \Web3\Contract($web3->provider, $contractAbi);
+                
+                $contract->at(env('BLOCKCHAIN_CONTRACT_ADDRESS'))->call('verifyBatch', $batch->batch_code, function ($err, $result) use (&$blockchainHash) {
+                    if ($err === null && isset($result[0])) {
+                        $blockchainHash = $result[0];
+                    }
+                });
+
+                // C. SO SÁNH (ĐÃ THÊM LOGIC ĐANG CHỜ BLOCKCHAIN)
+                if (empty($blockchainHash)) {
+                    $verifyStatus = 'pending'; // Mới lên chuỗi, Blockchain chưa load kịp -> VÀNG
+                } elseif (strtolower($blockchainHash) === strtolower($mysqlHash)) {
+                    $verifyStatus = 'success'; // Trùng khớp -> XANH
+                } else {
+                    $verifyStatus = 'tampered'; // Lệch nhau -> ĐỎ
+                }
+            } catch (\Exception $e) {
+                $verifyStatus = 'error'; // Mất mạng
+            }
+        }
+
+        // Tui truyền luôn 2 cái Hash ra ngoài cho chị check thử
+        return view('public.products.show', compact('product', 'batch', 'transaction', 'verifyStatus', 'mysqlHash', 'blockchainHash'));
     }
+
 }

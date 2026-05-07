@@ -57,6 +57,24 @@
         .stat-card:hover {
             transform: translateY(-8px);
         }
+
+        /* CSS Custom cho bộ quét QR giống hình 2 */
+        #reader { border: none !important; }
+        #reader__dashboard_section_csr span { color: #475569; font-weight: 500; }
+        #reader button {
+            background-color: #007bff; /* Nút Bật Camera màu xanh */
+            color: white;
+            padding: 10px 24px;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.3s;
+        }
+        #reader button:hover { background-color: #0056b3; }
+        #reader a { color: #10B981; text-decoration: none; display: none; } /* Ẩn các link rác của thư viện */
+        #reader select { padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; outline: none; }
     </style>
 </head>
 <body class="font-sans antialiased bg-white">
@@ -65,9 +83,22 @@
 
    
 
-    {{-- HERO SECTION - PHIÊN BẢN CẢI TIẾN GIỐNG FIGMA --}}
-<section class="hero-bg pt-28 pb-24 text-white overflow-hidden">
-    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
+
+{{-- HERO SECTION - PHIÊN BẢN CÓ VIDEO/ẢNH NỀN --}}
+<section class="relative pt-28 pb-24 text-white overflow-hidden bg-slate-900">
+    
+    <!-- KHỐI BACKGROUND NẰM DƯỚI CÙNG -->
+    <div class="absolute inset-0 z-0">
+
+        <!-- 2. NẾU BẠN CHỈ MUỐN DÙNG ẢNH (Thì xóa khối <video> ở trên đi và bỏ dấu comment dòng <img> dưới này ra) -->
+        <img src="{{ asset('images/nen.png') }}" alt="Background" class="w-full h-full object-cover">
+
+        <!-- LỚP PHỦ MÀU XANH ĐEN (Overlay): Giữ lại màu nhận diện của MDTrace và làm tối nền để chữ trắng nổi bật -->
+        <div class="absolute inset-0 bg-[#0A2540]/80"></div>
+    </div>
+
+    <!-- KHỐI NỘI DUNG (Đã thêm relative và z-10 để nó nổi lên trên mặt kính Video) -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
         
         <!-- Left Content -->
             <div class="space-y-8">
@@ -93,12 +124,10 @@
 
                 <!-- Hai nút -->
                 <div class="flex flex-wrap gap-4 pt-4">
-                    <!-- Nút Quét QR -->
-                    <a href="#" 
-                       class="bg-emerald-400 hover:bg-emerald-500 transition-all duration-300 text-black px-8 py-4 rounded-2xl font-semibold flex items-center gap-3 text-lg">
+                  <a href="{{ route('about') }}" 
+                    class="bg-emerald-400 hover:bg-emerald-500 transition-all duration-300 text-white px-8 py-4 rounded-2xl font-semibold flex items-center gap-3 text-lg">
                         Giới thiệu
                     </a>
-
                     <!-- Nút Đăng ký doanh nghiệp -->
                     <a href="{{ route('register') }}" 
                        class="border-2 border-white/70 hover:bg-white/10 hover:border-white/90 transition-all duration-300 px-8 py-4 rounded-2xl font-semibold flex items-center gap-3 text-lg">
@@ -307,6 +336,71 @@
         </div>
     </div>
 </section>
+
+{{-- FORM TRA CỨU & QUÉT QR --}}
+<section id="trace-search" class="py-16 bg-white relative z-10">
+    <div class="max-w-4xl mx-auto px-6">
+        <div class="bg-[#F4FBF7] rounded-[2.5rem] p-8 md:p-12 text-center border border-emerald-100 shadow-sm relative overflow-hidden">
+            
+            <div class="inline-flex items-center gap-2 bg-emerald-600 text-white px-4 py-1.5 rounded-full text-sm font-semibold mb-6 shadow-sm">
+                <i class="fa-solid fa-magnifying-glass"></i> Truy xuất nguồn gốc
+            </div>
+            
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-3 tracking-tight">Kiểm tra Sản phẩm</h2>
+            <p class="text-slate-600 mb-8 max-w-lg mx-auto">Nhập mã truy xuất hoặc quét QR để kiểm tra thông tin chi tiết về nguồn gốc và nhật ký lô hàng.</p>
+
+            <div id="error-message" class="mb-5 max-w-2xl mx-auto text-red-600 font-medium text-sm bg-red-50 py-3 rounded-xl border border-red-100 hidden items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-exclamation"></i> <span id="error-text"></span>
+            </div>
+
+            <form id="search-form" action="{{ route('public.search') }}" method="GET" class="bg-white p-2 rounded-2xl flex flex-col md:flex-row gap-2 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 max-w-3xl mx-auto relative z-20">
+                <div class="flex-1 flex items-center px-4 bg-gray-50/50 rounded-xl border border-transparent focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
+                    <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center mr-3 shrink-0">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <input type="text" name="code" id="search-input" placeholder="Nhập mã lô hàng (VD: TH-06)..." required class="w-full bg-transparent border-none focus:ring-0 text-slate-700 py-4 outline-none font-medium placeholder:font-normal">
+                </div>
+                
+                <div class="flex gap-2">
+                    <button type="button" onclick="openScanner()" class="px-6 py-4 bg-white border-2 border-gray-100 text-slate-700 font-bold rounded-xl hover:border-emerald-500 hover:text-emerald-600 transition-all flex items-center justify-center gap-2 whitespace-nowrap">
+                        <i class="fa-solid fa-expand"></i> Quét QR
+                    </button>
+                    
+                    <button type="submit" id="submit-btn" class="px-8 py-4 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 whitespace-nowrap shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-magnifying-glass"></i> Truy xuất
+                    </button>
+                </div>
+            </form>
+            
+            <p class="text-xs text-gray-400 mt-6 flex items-center justify-center gap-1.5"><i class="fa-regular fa-lightbulb text-amber-400 text-sm"></i> Quét mã QR trên sản phẩm hoặc nhập mã số lô hàng để xem thông tin chi tiết</p>
+        </div>
+    </div>
+</section>
+
+<div id="qr-modal" class="fixed inset-0 z-[100] bg-slate-900/60 hidden flex-col items-center justify-center p-4 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+    <div class="w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl relative flex flex-col">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-gray-900 text-lg leading-tight">Quét QR Code</h3>
+                    <p class="text-xs text-gray-500">Quét mã lô, sản phẩm để xem chi tiết</p>
+                </div>
+            </div>
+            <button onclick="closeScanner()" class="text-gray-400 hover:text-red-500 text-2xl transition-colors">&times;</button>
+        </div>
+        
+        <div class="p-5 bg-gray-50/50 flex justify-center">
+            <div id="reader" class="w-full min-h-[250px] bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-200 p-2 text-center flex flex-col justify-center"></div>
+        </div>
+        
+        <div class="px-6 py-4 bg-white border-t border-gray-100 text-right">
+            <button onclick="closeScanner()" class="px-6 py-2.5 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">Đóng</button>
+        </div>
+    </div>
+</div>
 
 {{-- PHẦN LỢI ÍCH - BENEFITS (Theo Figma) --}}
 <section id="benefits" class="py-28 bg-gray-50">
@@ -581,5 +675,114 @@
             }
         });
     </script>
+    
+<script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+<script>
+    /* ==============================================================
+       1. LOGIC TÌM KIẾM NGẦM (AJAX) - KHÔNG TẢI LẠI TRANG
+       ============================================================== */
+    document.getElementById('search-form').addEventListener('submit', function(e) {
+        e.preventDefault(); // Chặn tải lại trang
+
+        let code = document.getElementById('search-input').value;
+        let errorDiv = document.getElementById('error-message');
+        let errorText = document.getElementById('error-text');
+        let btn = document.getElementById('submit-btn');
+
+        // Tạo hiệu ứng loading cho nút bấm
+        let originalBtnHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...';
+        btn.disabled = true;
+        
+        // Ẩn lỗi cũ đi
+        errorDiv.classList.add('hidden');
+        errorDiv.classList.remove('flex');
+
+        // Gọi ngầm lên Server
+        fetch("{{ route('public.search') }}?code=" + encodeURIComponent(code), {
+            headers: {
+                "X-Requested-With": "XMLHttpRequest" // Báo cho Laravel biết đây là request ngầm
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                // Nếu đúng mã -> Lập tức chuyển sang trang Chi tiết Lô hàng
+                window.location.href = data.redirect;
+            } else {
+                // Nếu sai mã -> Hiện lỗi đỏ ngay dưới form
+                errorText.innerText = data.message;
+                errorDiv.classList.remove('hidden');
+                errorDiv.classList.add('flex');
+                
+                // Trả lại nút bấm bình thường
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            errorText.innerText = "Có lỗi kết nối, vui lòng thử lại!";
+            errorDiv.classList.remove('hidden');
+            errorDiv.classList.add('flex');
+            btn.innerHTML = originalBtnHtml;
+            btn.disabled = false;
+        });
+    });
+
+    /* ==============================================================
+       2. LOGIC BẬT TẮT CAMERA QUÉT QR
+       ============================================================== */
+    let html5QrcodeScanner = null;
+
+    function openScanner() {
+        const modal = document.getElementById('qr-modal');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        
+        // Delay 50ms để CSS render khối flex xong mới bật opacity và init Camera
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            if (!html5QrcodeScanner) {
+                html5QrcodeScanner = new Html5QrcodeScanner("reader", { 
+                    fps: 10, 
+                    qrbox: {width: 250, height: 250},
+                    rememberLastUsedCamera: true
+                }, false);
+                html5QrcodeScanner.render(onScanSuccess, onScanFailure);
+            }
+        }, 50);
+    }
+
+    function closeScanner() {
+        const modal = document.getElementById('qr-modal');
+        modal.classList.add('opacity-0');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 300);
+        
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner = null;
+        }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+        // Tắt tiếng bíp nếu muốn, ở đây ta xử lý link luôn
+        if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
+            window.location.href = decodedText;
+        } else {
+            // Điền vào ô input và tự động bấm nút Truy xuất (ngầm)
+            document.getElementById('search-input').value = decodedText;
+            closeScanner();
+            document.getElementById('submit-btn').click(); 
+        }
+    }
+
+    function onScanFailure(error) {
+        // Camera vẫn đang rà quét...
+    }
+</script>
 </body>
 </html>

@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
    public function boot(): void
     {
+        Schema::defaultStringLength(191);
         // 2. Thêm logic: Nếu APP_URL trong file .env có chứa chữ https thì ép toàn bộ hệ thống dùng https
         if (str_contains(env('APP_URL'), 'https')) {
             URL::forceScheme('https');

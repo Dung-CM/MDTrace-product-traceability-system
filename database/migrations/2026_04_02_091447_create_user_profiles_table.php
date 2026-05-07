@@ -24,6 +24,7 @@ return new class extends Migration
             $table->string('logo_url')->nullable();
             $table->text('map_link')->nullable(); // Lưu link iframe Google Map
             $table->json('company_images')->nullable(); // Lưu mảng nhiều ảnh công ty
+            $table->json('company_certificates')->nullable();
             $table->timestamps();
         });
     }

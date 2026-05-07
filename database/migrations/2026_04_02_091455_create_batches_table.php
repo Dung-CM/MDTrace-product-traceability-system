@@ -19,6 +19,13 @@ return new class extends Migration
             $table->date('expiry_date');
             $table->integer('quantity');
             $table->string('qr_code_url');
+            $table->foreignId('created_by')->nullable()->constrained('users')->onDelete('set null');
+
+            // --- THÊM 3 DÒNG NÀY VÀO ĐÂY NÈ DŨNG ---
+            $table->json('trace_logs')->nullable();
+            $table->json('origin_info')->nullable();
+            $table->json('distributor_info')->nullable();
+            
             $table->timestamps();
         });
     }
