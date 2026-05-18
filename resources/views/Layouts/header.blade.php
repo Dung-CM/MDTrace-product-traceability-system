@@ -21,10 +21,10 @@
         </nav>
         
         <div class="hidden md:flex items-center gap-4">
-            {{-- Kiểm tra: Phải có Session đăng nhập VÀ User phải thực sự tồn tại trong CSDL --}}
+           
             @if(Auth::check() && Auth::user())
                 
-                {{-- Nút Dashboard theo Role --}}
+               
                 @if(Auth::user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="px-5 py-2 text-sm font-medium hover:text-accent transition flex items-center gap-2">
                         <i class="fa-solid fa-gauge"></i> Quản trị
@@ -35,7 +35,7 @@
                     </a>
                 @endif
 
-                {{-- Nút Đăng xuất --}}
+                
                 <form action="{{ route('logout') }}" method="POST" class="m-0 p-0">
                     @csrf
                     <button type="submit" class="bg-gray-800 hover:bg-red-600 px-5 py-2.5 rounded-xl text-white font-semibold text-sm transition shadow-md flex items-center gap-2">
@@ -44,7 +44,7 @@
                 </form>
 
             @else
-                {{-- Chưa đăng nhập hoặc Database trống --}}
+                
                 <a href="{{ route('login') }}" class="px-5 py-2 text-sm font-medium hover:text-accent transition">Đăng nhập</a>
                 <a href="{{ route('register') }}" class="bg-accent hover:bg-accent-dark px-6 py-3 rounded-2xl font-semibold text-sm transition shadow-lg text-white">
                     Đăng ký doanh nghiệp

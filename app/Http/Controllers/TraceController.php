@@ -23,7 +23,7 @@ class TraceController extends Controller
             return abort(404, 'Không tìm thấy thông tin Lô hàng!');
         }
 
-        // 2. TẠO MÃ BĂM (HASH) TỪ MYSQL (Phải y hệt như lúc Mint)
+        // 2. TẠO MÃ BĂM (HASH) TỪ MYSQL 
         $payload = [
             'batch_id' => $batch->id,
             'batch_code' => $batch->batch_code,
@@ -145,7 +145,7 @@ class TraceController extends Controller
         }
 
         // 5. TRẢ VỀ GIAO DIỆN QUÉT MÃ CỦA KHÁCH HÀNG
-        // (Bạn cần tạo file resources/views/customer/scan_result.blade.php để hiển thị giao diện này)
+        
         return view('customer.scan_result', compact('batch', 'product', 'verifyStatus', 'message', 'mysqlHash', 'blockchainHash'));
     }
 }

@@ -143,57 +143,7 @@
                     </span>
                 </div>
                 
-                    <!-- <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider border-b border-gray-200">
-                                    <th class="px-6 py-4 font-semibold">Doanh nghiệp</th>
-                                    <th class="px-6 py-4 font-semibold">Tài khoản Email</th>
-                                    <th class="px-6 py-4 font-semibold">Trạng thái</th>
-                                    <th class="px-6 py-4 font-semibold">Hoạt động gần nhất</th>
-                                    <th class="px-6 py-4 font-semibold text-center">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-100">
-                                @forelse($enterprises as $enterprise)
-                                    <tr class="hover:bg-gray-50 transition">
-                                        <td class="px-6 py-4">
-                                            <div class="font-bold text-gray-800">{{ $enterprise->profile->company_name ?? 'Chưa cập nhật' }}</div>
-                                            <div class="text-xs text-gray-500 mt-1">MST: {{ $enterprise->profile->tax_code ?? 'N/A' }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 text-gray-600 font-medium">{{ $enterprise->email }}</td>
-                                        <td class="px-6 py-4">
-                                            @if($enterprise->status === 'active')
-                                                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold flex items-center w-max gap-1"><i class="fa-solid fa-circle text-[8px]"></i> Active</span>
-                                            @else
-                                                <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold flex items-center w-max gap-1"><i class="fa-solid fa-lock text-[10px]"></i> Locked</span>
-                                            @endif
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-500 text-sm">
-                                        {{ $enterprise->last_seen_at ? \Carbon\Carbon::parse($enterprise->last_seen_at)->diffForHumans() : 'Chưa ghi nhận' }}
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex justify-center gap-2">
-                                            <button type="button" onclick="openLockModal({{ $enterprise->id }}, '{{ $enterprise->profile->company_name ?? $enterprise->email }}')" 
-                                                    class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
-                                                <i class="fa-solid fa-user-lock"></i> Khóa
-                                            </button>
-
-                                            <button type="button" onclick="openDeleteModal({{ $enterprise->id }}, '{{ $enterprise->profile->company_name ?? $enterprise->email }}')" 
-                                                    class="bg-red-500 hover:bg-red-600 text-white px-3 py-2 rounded-lg text-sm font-semibold transition shadow-sm">
-                                                <i class="fa-solid fa-trash-can"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">Chưa có doanh nghiệp nào đang hoạt động.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div> -->
+                   
                 <div class="p-6 bg-slate-50">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     @forelse($enterprises as $enterprise)

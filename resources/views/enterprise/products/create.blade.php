@@ -193,7 +193,6 @@
                     <p class="text-xs text-gray-500 mb-2">Nhập nội dung bài viết giới thiệu về nguyên liệu, công dụng, đặc điểm của sản phẩm.</p>
                     <textarea name="detailed_introduction" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition">{{ $details['detailed_introduction'] ?? '' }}</textarea>
                     
-                    <textarea name="company_info" form="main-form" class="rich-editor w-full px-4 py-3 rounded-xl border border-gray-200 transition mt-4">{{ $details['company_info_html'] ?? '' }}</textarea>
                 </div>
             </div>
             

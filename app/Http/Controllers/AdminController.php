@@ -71,7 +71,7 @@ class AdminController extends Controller
     {
         // Yêu cầu bắt buộc phải nhập lý do
         $request->validate([
-            'reason' => 'required|string|max:1000'
+            'reason' => 'required|string|max:1000'//nullable nếu muốn không bắt buộc nhập lý do
         ], [
             'reason.required' => 'Vui lòng nhập lý do từ chối để doanh nghiệp biết.'
         ]);
@@ -83,10 +83,24 @@ class AdminController extends Controller
             $user->rejection_reason = $request->reason; // Lưu lý do vào DB
             $user->save();
             
-            return back()->with('success', 'Đã từ chối doanh nghiệp: ' . ($user->profile->company_name ?? $user->email));
-        }
+           try {
+                $emailData = [
+                    'company_name' => $user->profile->company_name ?? $user->name,
+                    'reason' => $request->reason
+                ];
 
-        return back()->with('error', 'Tài khoản không hợp lệ hoặc đã được xử lý!');
+                Mail::send('emails.enterprise_rejected', $emailData, function($message) use ($user) {
+                    $message->to($user->email)->subject('Thông báo: Hồ sơ đăng ký MDTrace bị từ chối');
+                });
+            } catch (\Exception $e) {
+                // Nếu lỗi mail thì vẫn cho qua nhưng báo Admin biết
+                return back()->with('warning', 'Đã từ chối nhưng lỗi gửi mail: ' . $e->getMessage());
+            }
+          
+
+            return back()->with('success', 'Đã từ chối và gửi mail thông báo cho doanh nghiệp.');
+        }
+        return back()->with('error', 'Tài khoản không hợp lệ!');
     }
    // Hàm hiển thị trang Dashboard Thống kê
   public function stats()

@@ -211,69 +211,7 @@
                     </table>
                 </div>
             </div>
-            <!-- <div class="bg-white rounded-xl shadow-sm border border-gray-200 mt-8 mb-8">
-                <div class="p-5 border-b border-gray-200 flex justify-between items-center bg-gray-50 rounded-t-xl">
-                    <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-link text-emerald-600"></i> MDTrace Block Explorer
-                    </h3>
-                    <div class="flex items-center gap-2">
-                        <span class="flex h-3 w-3 relative">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
-                        </span>
-                        <span class="text-xs text-emerald-700 font-bold uppercase tracking-wider">Live Network</span>
-                    </div>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-white text-gray-500 text-[11px] uppercase tracking-wider border-b border-gray-100">
-                                <th class="p-4 font-bold">Mã Giao dịch (Txn Hash)</th>
-                                <th class="p-4 font-bold">Mã Lô hàng</th>
-                                <th class="p-4 font-bold">Sản phẩm</th>
-                                <th class="p-4 font-bold">Thời gian</th>
-                                <th class="p-4 font-bold text-center">Trạng thái</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-50">
-                            @forelse($recentBlocks as $block)
-                            <tr class="hover:bg-slate-50 transition cursor-default">
-                                <td class="p-4 font-mono text-emerald-600 font-bold text-xs">
-                                    <div class="flex items-center gap-2" title="{{ $block->transaction_hash }}">
-                                        <i class="fa-brands fa-hive text-gray-300"></i> 
-                                        {{ substr($block->transaction_hash, 0, 16) }}...
-                                    </div>
-                                </td>
-                                <td class="p-4 font-bold text-slate-700 text-xs">
-                                    {{ $block->batch->batch_code ?? 'N/A' }}
-                                </td>
-                                <td class="p-4 text-gray-600 text-xs truncate max-w-[200px]" title="{{ $block->batch->product->name ?? '' }}">
-                                    {{ $block->batch->product->name ?? 'Dữ liệu trống' }}
-                                </td>
-                                <td class="p-4 text-gray-500 text-[11px] font-medium">
-                                    {{ $block->created_at->diffForHumans() }}
-                                </td>
-                                <td class="p-4 text-center">
-                                    <span class="bg-emerald-100 text-emerald-700 text-[10px] font-bold px-3 py-1 rounded-full border border-emerald-200">
-                                        ĐÃ MINT
-                                    </span>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="p-12 text-center text-gray-400">
-                                    <div class="flex flex-col items-center gap-3">
-                                        <i class="fa-solid fa-boxes-packing text-4xl opacity-20"></i>
-                                        <p class="italic text-sm">Sổ cái hiện đang trống. Chưa có lô hàng nào được đóng gói lên chuỗi.</p>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div> -->
+           
         </main>
     </div>
 

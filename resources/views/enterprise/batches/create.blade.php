@@ -56,7 +56,7 @@
                     <input type="date" name="expiry_date" value="{{ old('expiry_date') }}" required class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition">
                 </div>
             </div>
-<!-- dán ở đây -->
+
             <div class="mt-8 pt-6 border-t border-gray-100">
                 <h3 class="text-lg font-bold text-emerald-700 pb-2 mb-4">Dữ Liệu Truy Xuất Động (Tùy chọn)</h3>
                 <p class="text-sm text-gray-500 mb-4">Nhập nhật ký sản xuất, thông tin nguyên liệu và phân phối dành riêng cho đợt hàng này.</p>
@@ -345,23 +345,139 @@
         </div>
     </div>
 </div>
+
+<div id="modal-autofill-success" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-[60] flex items-center justify-center backdrop-blur-sm transition-opacity">
+    <div class="bg-white rounded-2xl w-full max-w-sm mx-4 shadow-2xl overflow-hidden transform transition-all text-center p-8 border-t-4 border-emerald-500">
+        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-5 shadow-inner">
+            <i class="fa-solid fa-check text-3xl text-emerald-600"></i>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-2">Tải Dữ Liệu Thành Công!</h3>
+        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+            Hệ thống đã tự động điền <strong>Nguồn gốc</strong>, <strong>Nhật ký</strong> và <strong>Phân phối</strong> từ lô hàng gần nhất. <br><br>
+            <span class="text-red-500 font-medium">Lưu ý:</span> Vui lòng cập nhật lại các mốc thời gian sản xuất cho phù hợp với đợt này.
+        </p>
+        <button type="button" onclick="closeModal('modal-autofill-success')" class="w-full px-4 py-3 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-sm flex items-center justify-center gap-2">
+            Đã hiểu & Tiếp tục
+        </button>
+    </div>
+</div>
  </form>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
+    /* =======================================================
+       1. KHỞI TẠO SELECT2 VÀ LẮNG NGHE SỰ KIỆN AUTO-FILL
+       ======================================================= */
     $(document).ready(function() {
         // Biến thẻ select product_id thành dạng có ô tìm kiếm
         $('select[name="product_id"]').select2({
             placeholder: "Gõ tên hoặc mã sản phẩm để tìm...",
             allowClear: true,
-            width: '100%' // Đảm bảo full viền theo Tailwind
+            width: '100%' 
+        });
+
+      // Lắng nghe sự kiện khi chọn sản phẩm (Select2)
+        $('select[name="product_id"]').on('select2:select', function (e) {
+            let productId = e.params.data.id;
+            if (!productId) return;
+
+            // Bắn API đi lấy dữ liệu lô cũ
+            fetch(`/enterprise/batches/latest-data/${productId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        fillOriginInfo(data.origin_info);
+                        fillDistributorInfo(data.distributor_info);
+                        fillTraceLogs(data.trace_logs);
+
+                        // ĐÃ SỬA: Thay alert bằng hàm mở Popup xịn xò
+                        openModal('modal-autofill-success');
+                    }
+                })
+                .catch(error => console.error('Lỗi lấy dữ liệu cũ:', error));
         });
     });
 
     /* =======================================================
-       HÀM XỬ LÝ MODAL CƠ BẢN
+       2. CÁC HÀM XỬ LÝ AUTO-FILL DỮ LIỆU CŨ VÀO FORM
+       ======================================================= */
+    function fillOriginInfo(origin) {
+        if (!origin) return;
+        
+        document.querySelector('input[name="supplier_name"]').value = origin.supplier_name || '';
+        document.querySelector('input[name="supplier_address"]').value = origin.supplier_address || '';
+
+        if (origin.materials && origin.materials.length > 0) {
+            const tbody = document.getElementById('material-list');
+            tbody.innerHTML = ''; // Xóa dòng trống mặc định
+            materialIndex = 0;
+
+            origin.materials.forEach(mat => {
+                const newRow = document.createElement('tr');
+                newRow.className = 'border-b border-gray-100 hover:bg-gray-50 transition';
+                // Cố tình bỏ trống mfg và exp để người dùng tự nhập ngày mới
+                newRow.innerHTML = `
+                    <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][name]" value="${mat.name || ''}" form="main-form" placeholder="Tên nguyên liệu..." class="w-full min-w-[150px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm"></td>
+                    <td class="px-4 py-3"><input type="text" name="materials[${materialIndex}][batch]" value="${mat.batch || ''}" form="main-form" placeholder="Mã lô..." class="w-full min-w-[100px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm"></td>
+                    <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][mfg]" form="main-form" class="w-full min-w-[130px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm"></td>
+                    <td class="px-4 py-3"><input type="date" name="materials[${materialIndex}][exp]" form="main-form" class="w-full min-w-[130px] px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-emerald-500 transition text-sm"></td>
+                    <td class="px-4 py-3"><input type="file" name="materials[${materialIndex}][image_url]" form="main-form" accept="image/*" class="w-full min-w-[180px] text-xs text-gray-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"></td>
+                    <td class="px-4 py-3 text-center"><button type="button" onclick="this.closest('tr').remove()" class="text-gray-400 hover:text-red-500 transition" title="Xóa dòng này"><i class="fa-solid fa-trash-can"></i></button></td>
+                `;
+                tbody.appendChild(newRow);
+                materialIndex++;
+            });
+        }
+    }
+
+    function fillDistributorInfo(dist) {
+        if (!dist) return;
+        document.querySelector('input[name="distributor_name"]').value = dist.name || '';
+        document.querySelector('input[name="distributor_address"]').value = dist.address || '';
+        document.querySelector('input[name="distributor_country"]').value = dist.country || 'Việt Nam';
+        document.querySelector('input[name="distributor_province"]').value = dist.province || '';
+        document.querySelector('input[name="distributor_storage"]').value = dist.storage || '';
+    }
+
+    function fillTraceLogs(traces) {
+        if (!traces || traces.length === 0) return;
+        
+        const container = document.getElementById('trace-stages-container');
+        container.innerHTML = ''; // Xóa thẻ mặc định
+        traceIndex = 0;
+
+        traces.forEach(trace => {
+            const newCard = document.createElement('div');
+            newCard.className = 'relative bg-white border border-gray-200 rounded-xl p-5 shadow-sm trace-card';
+            newCard.innerHTML = `
+                <div class="absolute top-4 right-4">
+                    <button type="button" onclick="removeTraceStage(this)" class="text-gray-400 hover:text-red-500 transition bg-red-50 hover:bg-red-100 p-2 rounded-lg"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+                <h5 class="text-md font-bold text-purple-700 mb-4 flex items-center border-b border-gray-100 pb-2">
+                    <span class="bg-purple-100 text-purple-700 w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2 trace-number"></span>Thông tin công đoạn
+                </h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="md:col-span-2"><label class="block text-sm font-semibold text-gray-700 mb-1">Tên công đoạn <span class="text-red-500">*</span></label><input type="text" name="traces[${traceIndex}][name]" value="${trace.name || ''}" form="main-form" required class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition font-bold text-purple-800 uppercase"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian bắt đầu</label><input type="datetime-local" name="traces[${traceIndex}][start_time]" form="main-form" onchange="updateTraceStats()" class="trace-start-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Thời gian kết thúc</label><input type="datetime-local" name="traces[${traceIndex}][end_time]" form="main-form" onchange="updateTraceStats()" class="trace-end-input w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Sản phẩm tham chiếu</label><input type="text" name="traces[${traceIndex}][product_ref]" value="${trace.product_ref || ''}" form="main-form" placeholder="VD: Gói bắp cải 500g" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Đối tượng thực hiện</label><input type="text" name="traces[${traceIndex}][person]" value="${trace.person || ''}" form="main-form" placeholder="VD: Trần Quốc Cường" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Đơn vị thực hiện</label><input type="text" name="traces[${traceIndex}][unit]" value="${trace.unit || ''}" form="main-form" placeholder="VD: Công ty TNHH MTV Bảo Toàn" class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div><label class="block text-sm font-semibold text-gray-700 mb-1">Địa điểm</label><input type="text" name="traces[${traceIndex}][location]" value="${trace.location || ''}" form="main-form" placeholder="VD: 316 Hoàng Diệu..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition"></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-semibold text-gray-700 mb-1">Mô tả ngắn</label><textarea name="traces[${traceIndex}][description]" form="main-form" rows="2" placeholder="Nhập tóm tắt công việc đã thực hiện..." class="w-full px-4 py-2 rounded-xl border border-gray-200 focus:ring-2 focus:ring-purple-500 transition">${trace.description || ''}</textarea></div>
+                    <div class="md:col-span-2"><label class="block text-sm font-semibold text-gray-700 mb-1">Ảnh minh chứng</label><input type="file" name="traces[${traceIndex}][image_url]" form="main-form" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100 border border-gray-200 rounded-xl cursor-pointer"></div>
+                </div>
+            `;
+            container.appendChild(newCard);
+            traceIndex++;
+        });
+        updateTraceStats();
+    }
+
+    /* =======================================================
+       3. HÀM XỬ LÝ MODAL CƠ BẢN (GIỮ NGUYÊN)
        ======================================================= */
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
@@ -379,12 +495,10 @@
         }
     }
 
-     /* =======================================================
-       2. CÁC HÀM XỬ LÝ "NGUỒN GỐC NGUYÊN LIỆU"
+    /* =======================================================
+       4. CÁC HÀM XỬ LÝ NGUỒN GỐC NGUYÊN LIỆU (GIỮ NGUYÊN)
        ======================================================= */
-    // ĐÃ FIX: Khởi tạo cứng bằng 1 vì đây là Form thêm mới
     let materialIndex = 1;
-    
     function addMaterialRow() {
         const tbody = document.getElementById('material-list');
         const newRow = document.createElement('tr');
@@ -402,11 +516,9 @@
     }
 
     /* =======================================================
-       3. CÁC HÀM XỬ LÝ "NHẬT KÝ SẢN XUẤT"
+       5. CÁC HÀM XỬ LÝ NHẬT KÝ SẢN XUẤT (GIỮ NGUYÊN)
        ======================================================= */
-    // ĐÃ FIX: Khởi tạo cứng bằng 1 vì đây là Form thêm mới
     let traceIndex = 1;
-
     function addTraceStage() {
         const container = document.getElementById('trace-stages-container');
         if (!container) return;
@@ -437,13 +549,12 @@
         updateTraceStats();
     }
 
-    // ĐÃ FIX: Xóa code rác nhân bản, gộp chung vào 1 hàm duy nhất
     function removeTraceStage(btn) {
         btn.closest('.trace-card').remove();
         updateTraceStats();
     }
 
-   function updateTraceStats() {
+    function updateTraceStats() {
         const cards = document.querySelectorAll('.trace-card');
         const totalTasks = cards.length;
         
@@ -489,16 +600,14 @@
         return `${h}:${m} ${d}/${mo}/${y}`;
     }
 
-
-    // Cập nhật thống kê khi load trang
+    // Cập nhật thống kê khi load trang (GIỮ NGUYÊN CỦA BẠN)
     $(document).ready(function() {
         updateTraceStats();
     });
-
 </script>
 
 <style>
-    /* Chỉnh lại giao diện Select2 cho khớp với Tailwind của bạn */
+    
     .select2-container .select2-selection--single {
         height: 48px !important; /* Tương đương py-3 */
         border-radius: 0.75rem !important; /* rounded-xl */

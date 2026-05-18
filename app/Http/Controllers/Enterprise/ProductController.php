@@ -51,7 +51,7 @@ class ProductController extends Controller
             $data['image_url'] = $request->file('image')->store('products', 'public');
         }
 
-        // --- FIX MODAL 1: NGUỒN GỐC (GIỮ ẢNH CŨ) ---
+        
         $materialsData = $request->input('materials', []);
         $oldMaterials = $product->origin_info['materials'] ?? [];
         
@@ -69,7 +69,7 @@ class ProductController extends Controller
             'materials'        => $materialsData
         ];
 
-        // --- FIX MODAL 4: NHẬT KÝ (GIỮ ẢNH CŨ) ---
+        
         $tracesData = $request->input('traces', []);
         $oldTraces = $product->trace_logs ?? [];
 
@@ -128,7 +128,7 @@ class ProductController extends Controller
     // Hiển thị danh sách sản phẩm (Có tìm kiếm & Phân trang)
     public function index(Request $request)
     {
-        // Khởi tạo query: Lấy sản phẩm của ĐÚNG doanh nghiệp đang đăng nhập + Kèm theo tên Danh mục
+        
         $query = Product::with('category')->where('user_id', Auth::id());
 
         // Xử lý ô Tìm kiếm (Search)
@@ -241,7 +241,7 @@ class ProductController extends Controller
         $data['distributor_info'] = [
             'name'     => $request->input('distributor_name'),
             'address'  => $request->input('distributor_address'),
-            'date'     => $request->input('distributor_date'),
+            'date'     => $request->input('distributor_date'), 
             'country'  => $request->input('distributor_country'),
             'province' => $request->input('distributor_province'),
             'storage'  => $request->input('distributor_storage'),

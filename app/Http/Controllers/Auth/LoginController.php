@@ -20,18 +20,17 @@ class LoginController extends Controller
             'password' => ['required'],
         ]);
 
-        // CHỈNH SỬA Ở ĐÂY: Thêm điều kiện status phải là 'active' 
-        // Nếu status là 'locked', 'deleted', 'pending' hay 'rejected' -> attempt sẽ trả về false
+      
+      
         $credentialsWithStatus = array_merge($credentials, ['status' => 'active']);
 
-        // Đối với Admin, có thể họ không có status 'active' hoặc status khác, 
-        // nên ta thử đăng nhập với status active trước, nếu không được thì kiểm tra xem có phải Admin không.
+       
         if (Auth::attempt($credentialsWithStatus, $request->boolean('remember'))) {
             return $this->handleAuthenticatedRequest($request);
         }
 
         // Trường hợp đăng nhập thất bại: Có thể sai pass HOẶC tài khoản bị khóa/xóa/chờ duyệt
-        // Ta kiểm tra xem email có tồn tại không để đưa ra thông báo chính xác
+        
         $user = \App\Models\User::where('email', $request->email)->first();
 
         if ($user) {

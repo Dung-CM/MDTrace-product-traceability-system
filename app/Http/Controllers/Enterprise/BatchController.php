@@ -25,7 +25,7 @@ class BatchController extends Controller
     // 1. Hiển thị danh sách Lô hàng
     public function index(Request $request)
     {
-        // Lấy các lô hàng thuộc về những sản phẩm do Doanh nghiệp này tạo ra
+        
         $query = Batch::whereHas('product', function($q) {
             $q->where('user_id', Auth::id());
         })->with('product');
@@ -45,7 +45,7 @@ class BatchController extends Controller
     // 2. Hiển thị Form tạo Lô hàng mới
     public function create()
     {
-        // Chỉ lấy sản phẩm của doanh nghiệp đang đăng nhập để đưa vào dropdown
+        
         $products = Product::where('user_id', Auth::id())->latest()->get();
         
         if($products->isEmpty()) {
@@ -66,10 +66,8 @@ class BatchController extends Controller
             'manufacturing_date' => 'required|date',
             'expiry_date'        => 'required|date|after_or_equal:manufacturing_date',
         ],[
-            // --- NƠI ĐỔI THÔNG BÁO LỖI ---
             'batch_code.unique' => 'Mã lô này đã được tạo. Vui lòng nhập mã khác!',
             
-            // (Bạn có thể Việt hóa luôn các lỗi khác cho chuyên nghiệp)
             'product_id.required' => 'Vui lòng chọn sản phẩm xuất lô.',
             'batch_code.required' => 'Vui lòng nhập mã lô hàng.',
             'quantity.required' => 'Vui lòng nhập số lượng.',
@@ -79,11 +77,9 @@ class BatchController extends Controller
 
         $product = Product::where('user_id', Auth::id())->findOrFail($request->product_id);
         
-        // --- 1. LOGIC XỬ LÝ CHUẨN GS1 TOÀN CẦU ---
         $gtin = $product->gtin_code ?? '0000000000000'; // Lấy GTIN của Sản phẩm
         $batchCode = $request->batch_code;
         
-        // Ép kiểu Hạn sử dụng thành định dạng YYMMDD (VD: 2027-01-10 -> 270110)
         $expDateObj = \Carbon\Carbon::parse($request->expiry_date);
         $yymmdd = $expDateObj->format('ymd');
 
@@ -119,25 +115,27 @@ class BatchController extends Controller
         // Lưu file vào ổ cứng
         Storage::disk('public')->put('qrcodes/' . $qrFileName, $result->getString());
        // --- 3. HỨNG DỮ LIỆU TỪ FORM (NGUỒN GỐC, NHẬT KÝ, PHÂN PHỐI) ---
-        // Xử lý Nhật ký (Traces)
+       // Xử lý Nhật ký (Traces)
         $tracesData = $request->input('traces', []);
-        if ($request->hasFile('traces')) {
-            foreach ($request->file('traces') as $index => $traceFile) {
-                if (isset($traceFile['image_url'])) {
-                    $tracesData[$index]['image_url'] = $traceFile['image_url']->store('traces', 'public');
-                }
+        foreach ($tracesData as $index => &$trace) {
+            // Kiểm tra xem ở index này, người dùng có up file lên không
+            if ($request->hasFile("traces.$index.image_url")) {
+                $trace['image_url'] = $request->file("traces.$index.image_url")->store('traces', 'public');
+            } else {
+                $trace['image_url'] = null; // Bắt buộc set null để tránh lỗi rỗng mảng JSON
             }
         }
 
         // Xử lý Nguồn gốc (Materials)
         $materialsData = $request->input('materials', []);
-        if ($request->hasFile('materials')) {
-            foreach ($request->file('materials') as $index => $materialFile) {
-                if (isset($materialFile['image_url'])) {
-                    $materialsData[$index]['image_url'] = $materialFile['image_url']->store('materials', 'public');
-                }
+        foreach ($materialsData as $index => &$mat) {
+            if ($request->hasFile("materials.$index.image_url")) {
+                $mat['image_url'] = $request->file("materials.$index.image_url")->store('materials', 'public');
+            } else {
+                $mat['image_url'] = null;
             }
         }
+        
         $originInfo = [
             'supplier_name'    => $request->input('supplier_name'),
             'supplier_address' => $request->input('supplier_address'),
@@ -240,9 +238,6 @@ class BatchController extends Controller
             if ($nonceStr === '') throw new \Exception('Không lấy được số Nonce.');
             $nonceHex = '0x' . dechex((int)$nonceStr);
 
-            // =========================================================================
-            // GIẢI PHÁP TỐI THƯỢNG: TỰ VIẾT MÃ MÁY EVM (BYPASS HOÀN TOÀN LỖI THƯ VIỆN)
-            // =========================================================================
             $methodId = substr(\kornrunner\Keccak::hash('mintBatch(string,string)', 256), 0, 8);
 
             // Xử lý tham số 1
@@ -374,5 +369,21 @@ class BatchController extends Controller
 
         $batch->update($data);
         return redirect()->route('enterprise.batches.index')->with('success', 'Cập nhật lô hàng thành công!');
+    }
+    public function getLatestBatchData($productId)
+    {
+        $latestBatch = \App\Models\Batch::where('product_id', $productId)
+                            ->latest('created_at')
+                            ->first();
+
+        if ($latestBatch) {
+            return response()->json([
+                'status' => 'success',
+                'trace_logs' => $latestBatch->trace_logs,
+                'origin_info' => $latestBatch->origin_info,
+                'distributor_info' => $latestBatch->distributor_info,
+            ]);
+        }
+        return response()->json(['status' => 'empty']);
     }
 }

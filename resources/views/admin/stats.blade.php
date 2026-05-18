@@ -222,7 +222,7 @@
                             '#64748b'  // Xám (Slate)
                             // Nếu $chartLabels == 'Chưa có sản phẩm nào' thì nó lấy màu xám nhạt
                         ].slice(0, {!! json_encode(count($chartLabels)) !!}), // Cắt đúng số lượng màu cần thiết
-                        borderWidth: 2, // Thêm viền trắng mỏng cho đẹp
+                        borderWidth: 2, // Thêm viền trắng mỏng 
                         borderColor: '#ffffff',
                         hoverOffset: 4
                     }]

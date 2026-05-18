@@ -58,11 +58,11 @@
             transform: translateY(-8px);
         }
 
-        /* CSS Custom cho bộ quét QR giống hình 2 */
+        
         #reader { border: none !important; }
         #reader__dashboard_section_csr span { color: #475569; font-weight: 500; }
         #reader button {
-            background-color: #007bff; /* Nút Bật Camera màu xanh */
+            background-color: #007bff; 
             color: white;
             padding: 10px 24px;
             border-radius: 0.75rem;
@@ -73,7 +73,7 @@
             transition: all 0.3s;
         }
         #reader button:hover { background-color: #0056b3; }
-        #reader a { color: #10B981; text-decoration: none; display: none; } /* Ẩn các link rác của thư viện */
+        #reader a { color: #10B981; text-decoration: none; display: none; } 
         #reader select { padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #cbd5e1; outline: none; }
     </style>
 </head>
@@ -81,23 +81,18 @@
 
     @include('layouts.header')
 
-   
-
-
 {{-- HERO SECTION - PHIÊN BẢN CÓ VIDEO/ẢNH NỀN --}}
 <section class="relative pt-28 pb-24 text-white overflow-hidden bg-slate-900">
     
-    <!-- KHỐI BACKGROUND NẰM DƯỚI CÙNG -->
+   
     <div class="absolute inset-0 z-0">
 
-        <!-- 2. NẾU BẠN CHỈ MUỐN DÙNG ẢNH (Thì xóa khối <video> ở trên đi và bỏ dấu comment dòng <img> dưới này ra) -->
+       
         <img src="{{ asset('images/nen.png') }}" alt="Background" class="w-full h-full object-cover">
 
-        <!-- LỚP PHỦ MÀU XANH ĐEN (Overlay): Giữ lại màu nhận diện của MDTrace và làm tối nền để chữ trắng nổi bật -->
         <div class="absolute inset-0 bg-[#0A2540]/80"></div>
     </div>
 
-    <!-- KHỐI NỘI DUNG (Đã thêm relative và z-10 để nó nổi lên trên mặt kính Video) -->
     <div class="relative z-10 max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-12 items-center">
         
         <!-- Left Content -->
@@ -195,8 +190,8 @@
                         <div class="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full inline-block mb-3 border border-emerald-200">
                             <i class="fa-solid fa-shield-check mr-1"></i> XÁC THỰC BLOCKCHAIN
                         </div>
-                        <h3 class="font-bold text-gray-900 text-lg">Cà phê Hữu cơ Nguyên chất</h3>
-                        <p class="text-sm text-gray-500 mb-3">Lô: #BATCH-8892</p>
+                        <h3 class="font-bold text-gray-900 text-lg">Đường Thốt Nốt Ngọc Trang</h3>
+                        <p class="text-sm text-gray-500 mb-3">Lô: #D001</p>
                         
                         <button class="w-full bg-emerald-500 text-white font-bold py-3 rounded-xl hover:bg-emerald-600 transition-colors">
                             Xem hành trình <i class="fa-solid fa-arrow-right ml-1"></i>
@@ -533,8 +528,8 @@
                 </p>
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                        <!-- Thay bằng ảnh thật nếu có -->
-                        <img src="https://via.placeholder.com/48x48/4F46E5/ffffff?text=NV" alt="Nguyễn Văn Minh" class="w-full h-full object-cover">
+                        
+                        <img src="{{ asset('storage/avatars/avt2.jpg') }}"  alt="Nguyễn Văn Minh" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <p class="font-bold text-gray-900">Nguyễn Văn Minh</p>
@@ -554,7 +549,7 @@
                 </p>
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                        <img src="https://via.placeholder.com/48x48/EC4899/ffffff?text=TL" alt="Trần Thị Lan" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/avatars/avt4.jpg') }}"  alt="Trần Thị Lan" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <p class="font-bold text-gray-900">Trần Thị Lan</p>
@@ -574,7 +569,7 @@
                 </p>
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 bg-gray-200 rounded-full overflow-hidden">
-                        <img src="https://via.placeholder.com/48x48/14B8A6/ffffff?text=PQ" alt="Phạm Quốc Hùng" class="w-full h-full object-cover">
+                        <img src="{{ asset('storage/avatars/avt3.jpg') }}"  alt="Phạm Quốc Hùng" class="w-full h-full object-cover">
                     </div>
                     <div>
                         <p class="font-bold text-gray-900">Phạm Quốc Hùng</p>
@@ -633,24 +628,21 @@
         document.addEventListener('DOMContentLoaded', () => {
             const counters = document.querySelectorAll('.count-up');
             
-            // Cấu hình tốc độ chạy (Tăng số này lên nếu muốn chạy chậm hơn, giảm đi nếu muốn nhanh hơn)
             const speed = 40; 
 
             const animateCounters = () => {
                 counters.forEach(counter => {
                     const updateCount = () => {
-                        const target = +counter.getAttribute('data-target'); // Lấy số đích từ Backend
-                        const count = +counter.innerText; // Lấy số đang hiển thị hiện tại
+                        const target = +counter.getAttribute('data-target'); 
+                        const count = +counter.innerText; 
                         
-                        // Tính bước nhảy: Đảm bảo bước nhảy ít nhất là 1 để tránh kẹt ở số nhỏ
                         const increment = Math.max(Math.ceil(target / speed), 1);
 
-                        // Nếu số hiện tại vẫn nhỏ hơn đích thì tiếp tục cộng
                         if (count < target) {
                             counter.innerText = count + increment;
                             setTimeout(updateCount, 30); // 30ms gọi lại 1 lần tạo cảm giác chạy liên tục
                         } else {
-                            counter.innerText = target; // Đảm bảo chốt đúng số đích khi kết thúc
+                            counter.innerText = target; 
                         }
                     };
                     
@@ -661,13 +653,12 @@
                 });
             };
 
-            // Dùng IntersectionObserver: Tính năng cực hay để biết khi nào người dùng cuộn tới
             const observer = new IntersectionObserver((entries) => {
                 if (entries[0].isIntersecting) {
-                    animateCounters(); // Bắt đầu đếm
-                    observer.disconnect(); // Hủy theo dõi (chỉ đếm 1 lần, cuộn lên cuộn xuống không bị đếm lại)
+                    animateCounters(); 
+                    observer.disconnect(); 
                 }
-            }, { threshold: 0.5 }); // threshold: 0.5 nghĩa là khu vực này hiện ra 50% màn hình thì mới bắt đầu đếm
+            }, { threshold: 0.5 }); 
 
             const statsSection = document.getElementById('stats-section');
             if (statsSection) {
@@ -675,15 +666,13 @@
             }
         });
     </script>
-    
+
 <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
 <script>
-    /* ==============================================================
-       1. LOGIC TÌM KIẾM NGẦM (AJAX) - KHÔNG TẢI LẠI TRANG
-       ============================================================== */
+    
     document.getElementById('search-form').addEventListener('submit', function(e) {
-        e.preventDefault(); // Chặn tải lại trang
+        e.preventDefault(); 
 
         let code = document.getElementById('search-input').value;
         let errorDiv = document.getElementById('error-message');
@@ -695,14 +684,14 @@
         btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...';
         btn.disabled = true;
         
-        // Ẩn lỗi cũ đi
+       
         errorDiv.classList.add('hidden');
         errorDiv.classList.remove('flex');
 
         // Gọi ngầm lên Server
         fetch("{{ route('public.search') }}?code=" + encodeURIComponent(code), {
             headers: {
-                "X-Requested-With": "XMLHttpRequest" // Báo cho Laravel biết đây là request ngầm
+                "X-Requested-With": "XMLHttpRequest" 
             }
         })
         .then(response => response.json())
@@ -730,9 +719,7 @@
         });
     });
 
-    /* ==============================================================
-       2. LOGIC BẬT TẮT CAMERA QUÉT QR
-       ============================================================== */
+   
     let html5QrcodeScanner = null;
 
     function openScanner() {
@@ -740,7 +727,6 @@
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         
-        // Delay 50ms để CSS render khối flex xong mới bật opacity và init Camera
         setTimeout(() => {
             modal.classList.remove('opacity-0');
             if (!html5QrcodeScanner) {
@@ -769,11 +755,9 @@
     }
 
     function onScanSuccess(decodedText, decodedResult) {
-        // Tắt tiếng bíp nếu muốn, ở đây ta xử lý link luôn
         if (decodedText.startsWith('http://') || decodedText.startsWith('https://')) {
             window.location.href = decodedText;
         } else {
-            // Điền vào ô input và tự động bấm nút Truy xuất (ngầm)
             document.getElementById('search-input').value = decodedText;
             closeScanner();
             document.getElementById('submit-btn').click(); 

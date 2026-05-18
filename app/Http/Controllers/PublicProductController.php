@@ -80,7 +80,7 @@ class PublicProductController extends Controller
         $product = Product::with('category')->where('gtin_code', $gtin)->firstOrFail();
         
         // 2. Tìm Lô hàng
-        $batch = \App\Models\Batch::where('product_id', $product->id)
+        $batch = \App\Models\Batch::where('product_id', $product->id) 
                                   ->where('batch_code', $batch_code)
                                   ->firstOrFail();
 
@@ -120,7 +120,7 @@ class PublicProductController extends Controller
                 $requestManager = new \Web3\RequestManagers\HttpRequestManager(env('BLOCKCHAIN_RPC_URL'), 10, $client);
                 $web3 = new \Web3\Web3(new \Web3\Providers\HttpProvider($requestManager));
 
-                // ĐÃ FIX LẠI ABI CHUẨN ĐỂ ĐỌC HASH
+                
               // BẢN DỊCH ABI CHUẨN 100% THEO SMART CONTRACT CỦA CHỊ
                 $contractAbi = '[{"inputs":[{"internalType":"string","name":"_batchCode","type":"string"}],"name":"verifyBatch","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"}]';
                 $contract = new \Web3\Contract($web3->provider, $contractAbi);
@@ -131,7 +131,7 @@ class PublicProductController extends Controller
                     }
                 });
 
-                // C. SO SÁNH (ĐÃ THÊM LOGIC ĐANG CHỜ BLOCKCHAIN)
+                // C. SO SÁNH 
                 if (empty($blockchainHash)) {
                     $verifyStatus = 'pending'; // Mới lên chuỗi, Blockchain chưa load kịp -> VÀNG
                 } elseif (strtolower($blockchainHash) === strtolower($mysqlHash)) {
@@ -144,7 +144,7 @@ class PublicProductController extends Controller
             }
         }
 
-        // Tui truyền luôn 2 cái Hash ra ngoài cho chị check thử
+       
         return view('public.products.show', compact('product', 'batch', 'transaction', 'verifyStatus', 'mysqlHash', 'blockchainHash'));
     }
 
